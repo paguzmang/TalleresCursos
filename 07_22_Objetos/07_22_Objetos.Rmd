@@ -49,9 +49,10 @@ background-size: contain
 .pull-right[
 Además, para la .red[sesión] se requiere:
 
-- el archivo [`objetos.RData`](https://1drv.ms/u/s!AlLSvdV-FwtugsEtekSFCInsZQ1Mtg?e=hnbblz). 
+- el archivo [`objetos.RData`](https://github.com/paguzmang/TalleresCursos/blob/master/07_22_Objetos/objetos.RData). 
 
 - No usaremos ninguna librería fuera de las ya instaladas de base.
+- Entre [aquí](https://github.com/paguzmang/TalleresCursos/tree/master/07_22_Objetos) para consultar el repositorio de esta presentación.
 ]
 
 ---
@@ -120,6 +121,48 @@ background-size: contain
   * Se crean con el comando: `list`.
   * Pueden almacenar cualquier tipo de objeto.
   * No tienen dimensión (igual que vectores).
+
+---
+
+## Objetos, sus tipos y sus clases
+
+### Actividad
+
++ Crear y establecer un directorio de trabajo en **Rstudio**. Llamelo `NotasCurso_nombre`, donde la palabra `nombre` remplacela por su nombre (p.e., `NotasCurso_pguzman`).
+
++ Dentro del directorio de trabajo, cree un nuevo script de código. Llamelo `NotasCurso_pguzman`. Note que este archivo quedará con extensión `.R`.
+
++ Utilice el script para realizar los cálculos necesarios para obtener la nota final del curso de los siguientes tres estudiantes:
+
+```{r, echo = F}
+d <- data.frame(
+  estud = c('A', 'B', 'C'),
+  n1 = c(2.8, 2.1, 4.3),
+  n2 = c(3.5, 1.5, 3.9),
+  n3 = c(4.1, 2.5, 3.8),
+  n4 = c(3.8, 3.2, 4.1)
+)
+d %>%
+  dplyr::rename(
+    Estudiante = estud,
+    `Nota 1 (15%)` = n1,
+    `Nota 2 (25%)` = n2,
+    `Nota 3 (30%)` = n3,
+    `Nota 4 (30%)` = n4
+  ) %>% kable(format = 'html', align = 'c') 
+```
+
+---
+
+## Objetos, sus tipos y sus clases
+
+### Actividad
+
++ En el script cree un vector por estudiante que contengan las cuatro notas parciales, cree otro vector para los porcertanjes y, realice el cálculo respectivo para obtener un vector para la nota final.
+
++ Usando el comando `save` o `save.image` guarde todos los objetos creados con el nombre `notas_nombre.RData` (la palabra nombre reemplacela por su nombre).
+
++ Guarde su script y cierre **Rstudio**.
 
 ---
 

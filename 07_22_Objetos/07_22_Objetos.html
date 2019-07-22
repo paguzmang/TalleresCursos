@@ -48,9 +48,10 @@ background-size: contain
 .pull-right[
 Además, para la .red[sesión] se requiere:
 
-- el archivo [`objetos.RData`](https://1drv.ms/u/s!AlLSvdV-FwtugsEtekSFCInsZQ1Mtg?e=hnbblz). 
+- el archivo [`objetos.RData`](https://github.com/paguzmang/TalleresCursos/blob/master/07_22_Objetos/objetos.RData). 
 
 - No usaremos ninguna librería fuera de las ya instaladas de base.
+- Entre [aquí](https://github.com/paguzmang/TalleresCursos/tree/master/07_22_Objetos) para consultar el repositorio de esta presentación.
 ]
 
 ---
@@ -124,6 +125,65 @@ background-size: contain
 
 ## Objetos, sus tipos y sus clases
 
+### Actividad
+
++ Crear y establecer un directorio de trabajo en **Rstudio**. Llamelo `NotasCurso_nombre`, donde la palabra `nombre` remplacela por su nombre (p.e., `NotasCurso_pguzman`).
+
++ Dentro del directorio de trabajo, cree un nuevo script de código. Llamelo `NotasCurso_pguzman`. Note que este archivo quedará con extensión `.R`.
+
++ Utilice el script para realizar los cálculos necesarios para obtener la nota final del curso de los siguientes tres estudiantes:
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;"&gt; Estudiante &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Nota 1 (15%) &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Nota 2 (25%) &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Nota 3 (30%) &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; Nota 4 (30%) &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; A &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 2.8 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 3.5 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 4.1 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 3.8 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; B &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 2.1 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 1.5 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 2.5 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 3.2 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;"&gt; C &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 4.3 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 3.9 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 3.8 &lt;/td&gt;
+   &lt;td style="text-align:center;"&gt; 4.1 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+
+## Objetos, sus tipos y sus clases
+
+### Actividad
+
++ En el script cree un vector por estudiante que contengan las cuatro notas parciales, cree otro vector para los porcertanjes y, realice el cálculo respectivo para obtener un vector para la nota final.
+
++ Usando el comando `save` o `save.image` guarde todos los objetos creados con el nombre `notas_nombre.RData` (la palabra nombre reemplacela por su nombre).
+
++ Guarde su script y cierre **Rstudio**.
+
+---
+
+## Objetos, sus tipos y sus clases
+
 ### Ejemplo
 
 
@@ -133,8 +193,9 @@ ls()                   # imprimir el nombre de los objetos
 ```
 
 ```
- [1] "AG"          "BK"          "CD"          "descrip_obj" "ecoli"      
- [6] "FM"          "LC"          "lovett"      "SS"          "YR"         
+ [1] "AG"          "BK"          "CD"          "d"           "descrip_obj"
+ [6] "ecoli"       "FM"          "LC"          "lovett"      "SS"         
+[11] "YR"         
 ```
 
 Examinemos el tipo y clase de algun objeto con la función o comando .red[`descrip_obj`]:
@@ -186,6 +247,13 @@ Al aplicar la función .red[`descrip_obj`] a cada objeto, obtenemos lo siguiente
    &lt;td style="text-align:left;"&gt; data.frame &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; list &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 17 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; d &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; list &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; data.frame &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; list &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; BK &lt;/td&gt;
