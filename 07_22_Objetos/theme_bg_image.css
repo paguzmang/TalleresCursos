@@ -1,0 +1,4 @@
+.inverse, .hljs-github {
+  background-image: url(imagenes_fondo/ppt_2_cuerpo.png); /* Change this to the url of the image you want as your background */
+  background-size: contain;
+}

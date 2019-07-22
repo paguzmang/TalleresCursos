@@ -1,0 +1,13 @@
+name: "Pablo A. Guzmán"
+output_dir: "."
+navbar:
+  title: "Talleres y Cursos"
+  left:
+    - text: "by Pablo A. Guzmán"
+      href: https://paguzmang.github.io/
+    - icon: fa-github fa-lg
+      href: http://github.com/paguzmang/TalleresCursos
+output:
+  html_document:
+    theme: paper
+    #css: 'styles.css'

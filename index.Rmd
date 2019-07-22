@@ -1,0 +1,6 @@
+---
+title: "Talleres y Cursos"
+---
+
+- Hola 1
+- Hola 2
