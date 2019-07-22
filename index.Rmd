@@ -2,8 +2,8 @@
 <br>
 <br>
 
-### Taller R (semestre 2 de 2019, UCES)
+### Taller R (semestre 2 de 2019, [UCES](https://www.ces.edu.co/))
 
-En este taller estudiaremos de forma colaborativa la secuencia de conceptos: **read**, **tidy**, **transform** y **graphics** de la hoja de resumen (cheat sheet) sobre data science de Rstudio.
+En este taller estudiaremos de forma colaborativa la secuencia de conceptos: **import**, **tidy**, **transform** y **visualise** promovida por los autores del libro [**R for Data Science**](https://r4ds.had.co.nz/explore-intro.html). Estos conceptos también se encuentran en esta [hoja de resumen](https://www.business-science.io/r-cheatsheet.html) (cheat sheet).
 
-- Sesión 1: [Objetos en R](07_22_Objetos/07_22_Objetos.html)
+- Sesión 1. Conceptos de repaso. [Objetos en R](07_22_Objetos/07_22_Objetos.html)
