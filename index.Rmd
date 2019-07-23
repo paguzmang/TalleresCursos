@@ -6,4 +6,4 @@
 
 En este taller estudiaremos de forma colaborativa la secuencia de conceptos: **import**, **tidy**, **transform** y **visualise** promovida por los autores del libro [**R for Data Science**](https://r4ds.had.co.nz/explore-intro.html). Estos conceptos también se encuentran en esta [hoja de resumen](https://www.business-science.io/r-cheatsheet.html) (cheat sheet).
 
-- Sesión 1. Conceptos de repaso. [Objetos en R](07_22_Objetos/07_22_Objetos.html)
+- Sesión 1. Conceptos de repaso. [Objetos en R](Taller_R_uces_2_2019/07_22_Objetos/07_22_Objetos.html)
