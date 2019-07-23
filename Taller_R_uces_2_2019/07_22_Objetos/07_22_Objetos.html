@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="theme_bg_image.css" type="text/css" />
     <link rel="stylesheet" href="mi_slideTitulo.css" type="text/css" />
     <link rel="stylesheet" href="text_red.css" type="text/css" />
+    <link rel="stylesheet" href="bg_inline_code.css" type="text/css" />
+    <link rel="stylesheet" href="font_size.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
@@ -17,10 +19,11 @@ class: left, middle, my-title, title-slide
 # Objetos en R
 ## ¿Porqué es importante diferenciarlos?
 ### Pablo Andrés Guzmán
-### Universidad CES | Programa de Biología
 ### 22 Julio 2019
 
 ---
+
+
 
 
 
@@ -48,10 +51,10 @@ background-size: contain
 .pull-right[
 Además, para la .red[sesión] se requiere:
 
-- el archivo [`objetos.RData`](https://github.com/paguzmang/TalleresCursos/blob/master/07_22_Objetos/objetos.RData). 
+- el archivo [`objetos.RData`](https://github.com/paguzmang/TalleresCursos/blob/master/Taller_R_uces_2_2019/07_22_Objetos/objetos.RData). 
 
 - No usaremos ninguna librería fuera de las ya instaladas de base.
-- Entre [aquí](https://github.com/paguzmang/TalleresCursos/tree/master/07_22_Objetos) para consultar el repositorio de esta presentación.
+- Entre [aquí](https://github.com/paguzmang/TalleresCursos/tree/master/Taller_R_uces_2_2019/07_22_Objetos) para consultar el repositorio de esta presentación.
 ]
 
 ---
@@ -64,9 +67,6 @@ background-size: contain
 # Objetos, sus tipos y sus clases
 
 ---
-
-background-image: url(imagenes_fondo/ppt_2_cuerpo.png)
-background-size: contain
 
 # Objetos, sus tipos y sus clases
 
@@ -86,10 +86,10 @@ background-size: contain
 ]
 
 .pull-right[
-![:scale 70%](imagenes_fondo/caja.png)
+
+![:scale 100%](https://image.freepik.com/vector-gratis/pila-cajas-carton-ilustracion_1308-2108.jpg) [.tiny[Creado por brgfx]](https://freepik.es/vector-gratis/pila-cajas-carton-ilustracion_1148745.htm)
+
 ]
-
-
 
 ---
 
@@ -330,7 +330,7 @@ background-size: contain
 
 ### Vectores
 
-Usaremos los vectores `AG`, `FM`, `BK` y `LC` para mostrar manipulación, creación y filtro de vectores y factores. Estos vectores (junto a `SS`, `CD` y `YR`) hacen parte de un conjunto de datos sobre un estudio caso-cantrol que buscó identificar asociación entre el cáncer de pulmón y la tenencia de aves como mascotas en Holada. El estudio incluyó 147 sujetos en total, 49 de ellos con cáncer de pulmon. Una descripción de los vectores es la siguiente:
+Usaremos los vectores `AG`, `FM`, `BK` y `LC` para mostrar la manipulación, creación y filtro de vectores y factores. Estos vectores (junto con `SS`, `CD` y `YR`) hacen parte de un conjunto de datos sobre un estudio caso-cantrol que buscó identificar asociación entre el cáncer de pulmón y la tenencia de aves como mascotas en Holada. El estudio incluyó 147 sujetos en total, 49 de ellos con cáncer de pulmon. Una descripción de los vectores es la siguiente:
 
 - `AG` = Edad (años) del sujeto.
 - `FM` = Sexo del sujeto.
@@ -488,7 +488,7 @@ Los argumentos `levels` y `labels` son opcionales.
 
 ### Matrices
 
-Usaremos el objeto `ecoli` el cual es una matriz de 3 filas y 5 columnas que almacena una tabla de _conteos_ del número de muestras de agua contaminadas con la bacteria _E. coli_ de acuerdo a la locación y a la fuente animal de la cual proviene la bacteria.
+Usaremos el objeto .red[`ecoli`], una matriz de 3 filas y 5 columnas que almacena una los .red[conteos] del número de muestras de agua contaminadas con la bacteria _E. coli_ de acuerdo a la locación en una bahia y a la fuente animal de la cual proviene la bacteria.
 
 
 ```r
