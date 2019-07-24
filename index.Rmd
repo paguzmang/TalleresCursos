@@ -9,7 +9,7 @@ En este taller estudiaremos de forma colaborativa la secuencia de conceptos: **i
 - Sesión 1. Conceptos de repaso. [Objetos en R](Taller_R_uces_2_2019/07_22_Objetos/07_22_Objetos.html)
 
 
-### Curso de progrmación (semestre 2 de 2019, [UCES](https://www.ces.edu.co/))
+### Curso de programación (semestre 2 de 2019, [UCES](https://www.ces.edu.co/))
 
 Material sobre curso de programación
 
