@@ -225,9 +225,13 @@ La instalación de un paquete sólo es necesario hacerla una vez, pero la activa
 
 
 
-## Guardando o creando objetos
+## Creando o guardando objetos
 
-Para guardar información (datos) en un objeto usamos una flecha (`<-`) creada por la combinación de teclas menor que (`<`) y el guión medio (`-`). **Guardar** información en un objeto es lo mismo que **Crear** un objeto con "algo" a dentro. Aquí algunos ejemplos:
+El **R** es un lenguaje orientado a objetos. Esto quiere decir que todo en **R** es un objeto que se puede manipular (crear, modificar, borrar) y que ocupa un espacio físico en la memoria de nuestro computador. Piense en un objeto como un **contenedor de información**.
+
+Así,  comandos tales como `seq` o `rep` son objetos que ya vienen instalados con **R** y que contienen información sobre como realizar tareas específicas. Otros tipos de objetos nos permiten almacenar información (datos) bajo diferentes estructuras de organización.
+
+Si vienen el **R** ya pone a nuestra disposición muchos objetos, el usuario puede crear sus propios objetos. Para **crear** un nuevo objeto con "algo" dentro, usamos una flecha (`<-`) creada por la combinación de teclas menor que (`<`) y el guión medio (`-`). **Crear** un objeto es lo mismo que **guardar** información en un objeto. Aquí algunos ejemplos:
 
 ```{r, prompt=T}
 x <- 45   # se guarda el 45 en x o se crea x con el nro. 45
@@ -242,13 +246,31 @@ x  # se ejecuta el objeto para imprimir su contenido
 w  # se ejecuta el objeto para imprimir su contenido
 ```
 
-La flecha (`<-`) indica que se esta **asignando** la información al objeto donde apunta la flecha. En este sentido, la flecha funciona en ambos sentidos. Así, las siguientes dos expresiones son equivalentes:
+La flecha (`<-`) indica que se esta **asignando** la información al objeto donde apunta la flecha. De esta forma, la flecha funciona en ambos sentidos. Así, las siguientes dos expresiones son equivalentes:
 
 ```{r, prompt=T}
 w <- seq(4, 12, 2)
 seq(4, 12, 2) -> w
 ```
 
+### Recomendaciones para darle nombre a objetos
+
+- El nombre debe ser una sola palabra (no debe tener espacios) sin caracteres especiales (p.e., tildes, "/", ":", "<", "( )")
+
+- Evite usar la ñ en el nombre de un objeto. También evite usar el nombre de un comando ya existente en **R**.
+
+- El nombre **debe ser corto** pero diciente del contenido del objeto. Algo que nos ayude a recordar que tiene el objeto. P.e., si vamos a registrar la edad de una persona y usamos `x` como nombre del objeto, en unos días olvidaremos que tiene ese objeto. Pero si usamos la palabra `edad` como nombre, recordaremos más fácil su contenido.
+
+- Evite usar mayusculas. P.e., un nombre tal como `Edad` será mas propenso a generar errores de escritura que un nombre como `edad`.
+
+- Si quiere usar una combinación de dos palabras para nombrar un objeto, utilice alguna de las siguientes estrategias:
+
+    + Mínuscula y mayuscula. P.e., edadMujeres
+    + Separadas por un guión bajo. P.e., edad_mujeres
+    + Separadas por un punto. P.e., edad.mujeres
+
+
+- Utilice un nombre clave como `temp` (de temporal) para nombrer objetos que no tienen mucha importancia en su sesión y que muy posiblemente los va a borrar después.
 
 ## Ambiente de trabajo
 
@@ -256,7 +278,7 @@ El ambiente de trabajo (**environment** ó **workspace**) esta conformado por lo
 
 ### Listar y borrar objetos del ambiente de trabajo {#borrarAmb}
 
-Para imprimir los objetos que conforman el ambiente de trabajo usamos el comando `ls` sin argumentos:
+Para imprimir el nombre de los objetos que conforman el ambiente de trabajo usamos el comando `ls` sin argumentos:
 
 ```{r, prompt=T}
 ls()   # imprimiendo los objetos del ambiente de trabajo
@@ -321,7 +343,7 @@ dir()  # se examina el contenido del directorio de trabajo
 dir(dir1)
 ```
 
-Note que existen cuatro archivos en el directorio de trabajo y uno de ellos es `mis_objetos.RData`, este es el archivo guardado atras usando `save.image`.
+Note que existen `r length(dir(dir1))` archivos en el directorio de trabajo y uno de ellos es `mis_objetos.RData`, este es el archivo guardado atras usando `save.image`.
 
 ### Cambiando el directorio de trabajo
 
@@ -382,6 +404,42 @@ file.remove(paste0(dir1, '/mis_objetos.RData'))
 file.remove(paste0(dir2, '/mis_objetos.RData'))
 file.remove(dir2)
 ```
+
+## Ejercicios
+
+1. Explique y diferencie los siguientes conceptos: **comando**, **argumento**, **paquete** y **librería**.
+
+2. Explique y diferencie los siguientes conceptos: **objeto**, **ambiente de trabajo**, **directorio de trabajo**.
+
+3. Para cada comando, (a) describa para que sirve, (b) liste sus tres primeros argumentos, y (c) diga a que paquete pertence.
+
+    - `runif`
+    - `substr`
+    - `install.packages`
+    - `dir`
+    
+4. Considere el siguiente script con código **R**:
+
+    ```{r, eval = F, prompt = F}
+library(graph)
+nodos <- c('A', 'B', 'C', 'D')
+bordes <- list(
+  A = list(edges = c('B', 'C') ),
+  B = list(edges = 'D'),
+  C = list(),
+  D = list()
+)
+g1 <- new('graphNEL', nodes = nodos, edgeL = bordes, 
+          edgemode = 'directed')
+g1
+```
+    
+    Para el código dado (sin ejecutarlo), responder lo siguiente:
+    - ¿Cuáles comandos se utilizan?
+    - ¿Cuáles objetos fueron creados?
+    - ¿Cuáles librerías fueron activadas?
+    - Si se ejecutará todo en la consola, ¿de cuál objeto se imprimiría su contenido?
+    - Ejecute en la consola la primera línea (`library(graph)`), si le sale un error, explique porque salio ese error. 
 
 
 ## Referencias

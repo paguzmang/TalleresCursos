@@ -425,9 +425,11 @@ Figura 3: A. Página principal de la ayuda HTML. Se marca la opción <em>Package
 <p>La instalación de un paquete sólo es necesario hacerla una vez, pero la activación del paquete se debe hacer cada vez que volvamos a abrir el <strong>R</strong> (y se requiera el paquete).</p>
 </div>
 </div>
-<div id="guardando-o-creando-objetos" class="section level2">
-<h2>Guardando o creando objetos</h2>
-<p>Para guardar información (datos) en un objeto usamos una flecha (<code>&lt;-</code>) creada por la combinación de teclas menor que (<code>&lt;</code>) y el guión medio (<code>-</code>). <strong>Guardar</strong> información en un objeto es lo mismo que <strong>Crear</strong> un objeto con “algo” a dentro. Aquí algunos ejemplos:</p>
+<div id="creando-o-guardando-objetos" class="section level2">
+<h2>Creando o guardando objetos</h2>
+<p>El <strong>R</strong> es un lenguaje orientado a objetos. Esto quiere decir que todo en <strong>R</strong> es un objeto que se puede manipular (crear, modificar, borrar) y que ocupa un espacio físico en la memoria de nuestro computador. Piense en un objeto como un <strong>contenedor de información</strong>.</p>
+<p>Así, comandos tales como <code>seq</code> o <code>rep</code> son objetos que ya vienen instalados con <strong>R</strong> y que contienen información sobre como realizar tareas específicas. Otros tipos de objetos nos permiten almacenar información (datos) bajo diferentes estructuras de organización.</p>
+<p>Si vienen el <strong>R</strong> ya pone a nuestra disposición muchos objetos, el usuario puede crear sus propios objetos. Para <strong>crear</strong> un nuevo objeto con “algo” dentro, usamos una flecha (<code>&lt;-</code>) creada por la combinación de teclas menor que (<code>&lt;</code>) y el guión medio (<code>-</code>). <strong>Crear</strong> un objeto es lo mismo que <strong>guardar</strong> información en un objeto. Aquí algunos ejemplos:</p>
 <pre class="r"><code>&gt; x &lt;- 45   # se guarda el 45 en x o se crea x con el nro. 45
 &gt; w &lt;- seq(4, 12, 2)  # se guarda el resultado del comando seq
 &gt; z &lt;- x^2    # se guarda el resultado de elevear al cuadrado el objeto 'x'</code></pre>
@@ -436,16 +438,32 @@ Figura 3: A. Página principal de la ayuda HTML. Se marca la opción <em>Package
 <pre><code>[1] 45</code></pre>
 <pre class="r"><code>&gt; w  # se ejecuta el objeto para imprimir su contenido</code></pre>
 <pre><code>[1]  4  6  8 10 12</code></pre>
-<p>La flecha (<code>&lt;-</code>) indica que se esta <strong>asignando</strong> la información al objeto donde apunta la flecha. En este sentido, la flecha funciona en ambos sentidos. Así, las siguientes dos expresiones son equivalentes:</p>
+<p>La flecha (<code>&lt;-</code>) indica que se esta <strong>asignando</strong> la información al objeto donde apunta la flecha. De esta forma, la flecha funciona en ambos sentidos. Así, las siguientes dos expresiones son equivalentes:</p>
 <pre class="r"><code>&gt; w &lt;- seq(4, 12, 2)
 &gt; seq(4, 12, 2) -&gt; w</code></pre>
+<div id="recomendaciones-para-darle-nombre-a-objetos" class="section level3">
+<h3>Recomendaciones para darle nombre a objetos</h3>
+<ul>
+<li><p>El nombre debe ser una sola palabra (no debe tener espacios) sin caracteres especiales (p.e., tildes, “/”, “:”, “&lt;”, “( )”)</p></li>
+<li><p>Evite usar la ñ en el nombre de un objeto. También evite usar el nombre de un comando ya existente en <strong>R</strong>.</p></li>
+<li><p>El nombre <strong>debe ser corto</strong> pero diciente del contenido del objeto. Algo que nos ayude a recordar que tiene el objeto. P.e., si vamos a registrar la edad de una persona y usamos <code>x</code> como nombre del objeto, en unos días olvidaremos que tiene ese objeto. Pero si usamos la palabra <code>edad</code> como nombre, recordaremos más fácil su contenido.</p></li>
+<li><p>Evite usar mayusculas. P.e., un nombre tal como <code>Edad</code> será mas propenso a generar errores de escritura que un nombre como <code>edad</code>.</p></li>
+<li><p>Si quiere usar una combinación de dos palabras para nombrar un objeto, utilice alguna de las siguientes estrategias:</p>
+<ul>
+<li>Mínuscula y mayuscula. P.e., edadMujeres</li>
+<li>Separadas por un guión bajo. P.e., edad_mujeres</li>
+<li>Separadas por un punto. P.e., edad.mujeres</li>
+</ul></li>
+<li><p>Utilice un nombre clave como <code>temp</code> (de temporal) para nombrer objetos que no tienen mucha importancia en su sesión y que muy posiblemente los va a borrar después.</p></li>
+</ul>
+</div>
 </div>
 <div id="ambiente-de-trabajo" class="section level2">
 <h2>Ambiente de trabajo</h2>
 <p>El ambiente de trabajo (<strong>environment</strong> ó <strong>workspace</strong>) esta conformado por los objetos que el usuario crea o guarda en una sesión. P.e., en la sección anterior creamos tres objetos <code>x</code>, <code>w</code> y <code>z</code> de modo que estos tres objetos conforman nuestro ambiente de trabajo actual.</p>
 <div id="borrarAmb" class="section level3">
 <h3>Listar y borrar objetos del ambiente de trabajo</h3>
-<p>Para imprimir los objetos que conforman el ambiente de trabajo usamos el comando <code>ls</code> sin argumentos:</p>
+<p>Para imprimir el nombre de los objetos que conforman el ambiente de trabajo usamos el comando <code>ls</code> sin argumentos:</p>
 <pre class="r"><code>&gt; ls()   # imprimiendo los objetos del ambiente de trabajo</code></pre>
 <pre><code>[1] &quot;w&quot; &quot;x&quot; &quot;z&quot;</code></pre>
 <p>Para borrar objetos específicos del ambiente de trabajo, usamos el comado <code>rm</code>:</p>
@@ -474,7 +492,7 @@ Figura 3: A. Página principal de la ayuda HTML. Se marca la opción <em>Package
 <pre class="r"><code>&gt; dir()  # se examina el contenido del directorio de trabajo</code></pre>
 <pre><code>[1] &quot;Dropbox&quot;                    &quot;mis_objetos.RData&quot;         
 [3] &quot;OneDrive&quot;                   &quot;OneDrive - Universidad CES&quot;</code></pre>
-<p>Note que existen cuatro archivos en el directorio de trabajo y uno de ellos es <code>mis_objetos.RData</code>, este es el archivo guardado atras usando <code>save.image</code>.</p>
+<p>Note que existen 4 archivos en el directorio de trabajo y uno de ellos es <code>mis_objetos.RData</code>, este es el archivo guardado atras usando <code>save.image</code>.</p>
 </div>
 <div id="cambiando-el-directorio-de-trabajo" class="section level3">
 <h3>Cambiando el directorio de trabajo</h3>
@@ -496,6 +514,40 @@ Figura 3: A. Página principal de la ayuda HTML. Se marca la opción <em>Package
 </ol>
 <p>Note que ahora, el archivo <code>mis_objetos.RData</code> quedó guardado en el nuevo <em>directorio de trabajo</em>.</p>
 </div>
+</div>
+<div id="ejercicios" class="section level2">
+<h2>Ejercicios</h2>
+<ol style="list-style-type: decimal">
+<li><p>Explique y diferencie los siguientes conceptos: <strong>comando</strong>, <strong>argumento</strong>, <strong>paquete</strong> y <strong>librería</strong>.</p></li>
+<li><p>Explique y diferencie los siguientes conceptos: <strong>objeto</strong>, <strong>ambiente de trabajo</strong>, <strong>directorio de trabajo</strong>.</p></li>
+<li><p>Para cada comando, (a) describa para que sirve, (b) liste sus tres primeros argumentos, y (c) diga a que paquete pertence.</p>
+<ul>
+<li><code>runif</code></li>
+<li><code>substr</code></li>
+<li><code>install.packages</code></li>
+<li><code>dir</code></li>
+</ul></li>
+<li><p>Considere el siguiente script con código <strong>R</strong>:</p>
+<pre class="r"><code>library(graph)
+nodos &lt;- c('A', 'B', 'C', 'D')
+bordes &lt;- list(
+  A = list(edges = c('B', 'C') ),
+  B = list(edges = 'D'),
+  C = list(),
+  D = list()
+)
+g1 &lt;- new('graphNEL', nodes = nodos, edgeL = bordes, 
+      edgemode = 'directed')
+g1</code></pre>
+Para el código dado (sin ejecutarlo), responder lo siguiente:
+<ul>
+<li>¿Cuáles comandos se utilizan?</li>
+<li>¿Cuáles objetos fueron creados?</li>
+<li>¿Cuáles librerías fueron activadas?</li>
+<li>Si se ejecutará todo en la consola, ¿de cuál objeto se imprimiría su contenido?</li>
+<li>Ejecute en la consola la primera línea (<code>library(graph)</code>), si le sale un error, explique porque salio ese error.</li>
+</ul></li>
+</ol>
 </div>
 <div id="referencias" class="section level2 unnumbered">
 <h2>Referencias</h2>
