@@ -1,0 +1,17 @@
+book_filename: "out"
+output_dir: "docs"
+#delete_merged_file: yes
+#new_session: yes
+keep_md: false
+language:
+  label:
+    fig: 'Figura '
+    tab: 'Tabla '
+    eq: 'Ecuación '
+  ui:
+    edit: Edit
+    chapter_name: ''
+
+#rmd_files:
+#  [
+#    "index.Rmd",
