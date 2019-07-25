@@ -13,6 +13,7 @@ output:
 csl: apa.csl
 bibliography: ref.bib
 link-citations: yes
+#runtime: shiny
 ---
 
 
@@ -183,10 +184,10 @@ include_graphics('ayudaPaquetes.png')
 
 
 
-- Conocer cuales paquetes tenemos instalados. Siga la ruta Menu Paquetes -> Cargar paquete, esto le abre un cuadro de dialogo con los paquetes instalados. También, la siguiente expresión para **R** imprime en la consola los paquetes instalados:
+- Conocer cuales paquetes tenemos instalados. Siga la ruta Menu Paquetes -> Cargar paquete, esto le abre un cuadro de dialogo con los paquetes instalados. También, la siguiente expresión para **R** abre una ventana con un listado de los paquetes instalados:
 
     ```{r, results='hide'}
-installed.packages()[, "Package"]  # Se imprimen todos los paquetes instalados
+library()  # abre ventana con listado de paquetes instalados
 ```
 
 - Visitar el [CRAN](https://cran.r-project.org/web/packages/) (repositorios del **R**) para buscar paquetes: En el enlace <https://cran.r-project.org/web/packages/>. En esta página puede escoger consultar los paquetes en orden alfabetico o por fecha de publicación. P.e., seleccione por orden alfabetico. Cuando este en la página del listado de paquetes se recomienda usar el buscador de su explorador (se activa con las teclas CTRL + F) para buscar temas por alguna palabra clave. P.e., busque la palabra clave "genet" o "ecology" para ver que paquetes se relacionan con estos temas.
@@ -221,7 +222,7 @@ La orden anterior descarga e instala un paquete, pero no lo activa. Cuando un pa
 library(ape)  # se activa el paquete 'ape' luego de haberlo instalado
 ```
 
-La instalación de un paquete sólo es necesario hacerla una vez, pero la activación del paquete se debe hacer cada vez que volvamos a abrir el **R** (y se requiera el paquete).
+La instalación de un paquete sólo es necesario hacerla una vez, pero la activación del paquete se debe hacer cada vez que volvamos a abrir el **R** (y se requiera el paquete). El comando `search`, sin argumentos, imprime en la consola sólo los paquetes activados en una sesión.
 
 
 
@@ -299,16 +300,16 @@ ls()   # imprimiendo los objetos del ambiente de trabajo
 y notamos que ya no aparece el objeto `x`. Para borrar todos los objetos de una sola vez usamos la siguiente la expresión: 
 
 ```{r, prompt=T}
-rm(list = ls())   # imprimiendo los objetos del ambiente de trabajo
+rm(list = ls())   # borrando todos los objetos del ambiente de trabajo de una sola vez
 ```
 
-Observe ahora que no existe ningún objeto:
+Observe que ya no existe ningún objeto:
 
 ```{r, prompt=T}
 ls()   # imprimiendo los objetos del ambiente de trabajo
 ```
 
-El resultado `character(0)` indica que no existe ningún objeto en el ambiente de trabajo.
+El resultado `character(0)` representa que le resultado esta vacio, indicando que no existe ningún objeto en el ambiente de trabajo.
 
 ### Guardando el ambiente de trabajo
 
@@ -318,10 +319,13 @@ Para guardar en nuestro computador todo el ambiente de trabajo (es decir, todos 
 x <- 45   # se guarda el 45 en x o se crea x con el nro. 45
 w <- seq(4, 12, 2)  # se guarda el resultado del comando seq
 z <- x^2    # se guarda el resultado de elevear al cuadrado el objeto 'x'
-save.image('mis_objetos.RData')  # se guarda el workspace (objetos creados en la sesion)
+save.image('mis_objetos.RData')  # se guarda el workspace (todos los objetos creados en la sesion)
+save(x, w, file = 'xw.RData')    # se guardan solo los objetos x, w
 ```
 
-Lo anterior crea un archivo llamado `mis_objetos.RData` en una carpeta de nuestro computador conocida como el _directorio de trabajo_ (**working directory**). Cuando abrimos **R**, si no hacemos otra cosa, él mismo determina un _directorio de trabajo_. Para conocer el _directorio de trabajo_ actual se usa el comando `getwd`:
+El comando `save.image` guarda o crea un archivo llamado `mis_objetos.RData`. Este comando guarda **todos** los objetos del ambiente de trabajo, mientras que el comando `save` guarda objetos específicos. En este caso, con el comando `save` se guardan sólo `x` y `w` en un archivo llamado `xw.RData`. 
+
+En ambos casos, los archivos generados quedan alojados en una carpeta de nuestro computador conocida como el _directorio de trabajo_ (**working directory**). Cuando abrimos **R**, si no hacemos otra cosa, él mismo determina un _directorio de trabajo_. Para conocer el _directorio de trabajo_ actual se usa el comando `getwd`:
 
 ```{r, prompt=T, results='hide'}
 getwd()   # Muestra cual es el directorio de trabajo actual
@@ -330,6 +334,7 @@ getwd()   # Muestra cual es el directorio de trabajo actual
 ```{r, echo=F, prompt=T }
 dir1 <- "/Users/pabloandres/Documents"
 save.image(paste0(dir1,  '/mis_objetos.RData'))
+save(x, w, file = paste0(dir1,  '/xw.RData'))
 dir1
 ```
 
@@ -343,7 +348,7 @@ dir()  # se examina el contenido del directorio de trabajo
 dir(dir1)
 ```
 
-Note que existen `r length(dir(dir1))` archivos en el directorio de trabajo y uno de ellos es `mis_objetos.RData`, este es el archivo guardado atras usando `save.image`.
+Note que existen `r length(dir(dir1))` archivos en el directorio de trabajo y dos de ellos son `mis_objetos.RData` y `xw.RData`, los cuales fueron guardados atras usando los comandos `save.image` y `save` respectivamente.
 
 ### Cambiando el directorio de trabajo
 
@@ -358,7 +363,7 @@ if(!dir.exists(dir2)) dir.create(dir2) # se crea una carpeta 'prog'
 
 1. Cree una carpeta en alguna ubicación de su computador. P.e., enseguida crearé una carpeta llamada `prog` en la ruta ``r dir1`` de mi computador. Usted debe buscar su propia ubicación para crear la carpeta `prog`.
 
-2. En **R** use el comando `getwd` para establecer el directorio de trabajo a la carpeta creada en el paso (1):
+2. En **R** use el comando `setwd` para establecer el directorio de trabajo a la carpeta creada en el paso (1):
 
     ```{r, eval=F}
 setwd("/Users/pabloandres/Documents/prog")
@@ -402,23 +407,92 @@ Note que ahora, el archivo `mis_objetos.RData` quedó guardado en el nuevo _dire
 # remocion de archivos y carpetas
 file.remove(paste0(dir1, '/mis_objetos.RData'))
 file.remove(paste0(dir2, '/mis_objetos.RData'))
+file.remove(paste0(dir1, '/xw.RData'))
 file.remove(dir2)
 ```
 
+### Cargando objetos al ambiente de trabajo
+
+Si tenemos un archivo `.RData` con algunos objetos y queremos cargar este archivo a nuestro ambiente de trabajo actual, podemos usar alguna de las siguientes opciones:
+
+- Usar el comando `load`. P.e., la orden `load('mis_objetos.RData')` carga los objetos del archivo `mis_objetos.RData`. El archivo debe estar en el directorio de trabajo.
+
+- Usar la opción `Cargar área de trabajo` del menu `Archivo` de la consola en Windows o la opción `Load Workspace File ...` del menu `Workspace` en la consola de Mac.
+
+> Atención: Si va a cargar un `.RData` que tiene objetos con el mismo nombre de objetos que ya tiene en su ambiente de trabajo, estos objetos serán reemplazados por los nuevos. Por tanto, tenga cuidado cuando realiza esta acción.
+
 ## Ejercicios
 
-1. Explique y diferencie los siguientes conceptos: **comando**, **argumento**, **paquete** y **librería**.
+1. Escriba el código **R** requerido para calcular $y$ en las siguientes funciones matemáticas:
 
-2. Explique y diferencie los siguientes conceptos: **objeto**, **ambiente de trabajo**, **directorio de trabajo**.
+    a. $y = |4x - 1| - 2$; para $x = -3$
+    
+    b. $y = \frac{1}{3}\sqrt{7 - x}$; para $x = -2$
+    
+    c. $y = \dfrac{\sqrt{x+1}}{x^ 2}$; para $x = \sqrt{2}$
+    
+    d. $y = \dfrac{e^x + e^{-x}}{2}$; para $x = 1$ y para $x = -1$
+    
+    e. $y = ae^{-be^{-cx}}$; para $x = 4, a = 5, b = 1, c = 1$
+    
+    f. $y = \log_{3} x$; para $x = 9$
+    
+    g. $y = \log_{10} x$; para $x = 0.0001$
+    
+    Ayuda: `?log10`; `?abs` ; `?Arithmetic`; `?sqrt`
+    
+ 
+ 2. Escriba el código **R** que le permita verificar que el valor de $x$ dado es una solución de las siguientes (in)ecuaciones.
+ 
+    a. $\log_{3} (7-x) - \log_{3} (1-x) = 1$.  Solución: $x = -2$
+    
+    b. $\dfrac{x(1-x)}{x + 2} \geq 0$. Una posible solución: $x = 0.5$
+    
 
-3. Para cada comando, (a) describa para que sirve, (b) liste sus tres primeros argumentos, y (c) diga a que paquete pertence.
+
+3. Explique y diferencie los siguientes conceptos: **comando**, **argumento**, **paquete** y **librería**.
+
+4. Explique y diferencie los siguientes conceptos: **objeto**, **ambiente de trabajo**, **directorio de trabajo**.
+
+5. Considere la ecuación $y = x^2  e^{-x/2}$, donde $e = `r round(exp(1),4)`$ es la base de los logaritmos naturales. Cree un script para **R** que calcule $y$ para $x = 2$, $x = 4$ y $x = 6$. Guarde cada resultado en un objeto, p.e., `y2`, `y4` y `y6`. Guarde los tres objetos en un archivo .RData. Decida usted el nombre del archivo. Ayuda: En **R** el comando `exp` saca la exponencial a un número. Por ejemplo, $e^1 =$ `exp(1)`, $e^2 =$ `exp(2)`. Envie el archivo .RData al correo pguzman@ces.edu.co.
+
+6. Sin hacerle ningún cambio, ejecute el siguiente script de código **R**, identifique los errores y corrijalos. Vuelva a ejecutar el script y verifique su corrección. 
+
+    ```{r, eval = F, prompt = F}
+pa <- 45/9  # se crea el objeto pa
+pb - 3      # se crea el objeto pb
+
+# se hace un grafico con un punto en la coordenada (pa, pb)
+plot(x = pa, y = pb, pch = 15 cex = 20, col = 'red')  
+```
+    
+    Al corregir el código y ejecutarlo se debe producir el siguiente gráfico:
+    
+```{r, echo = F, fig.width=3, fig.height=3}
+pa <- 45/9  # se crea el objeto pa
+pb <- 3      # se crea el objeto pb
+
+# se hace un grafico con un punto en la coordenada (pa, pb)
+par(mar = c(3,3,1,1), mgp = c(2,1,0), cex = 0.9)
+plot(x = pa, y = pb, pch = 15 , cex = 20, col = 'red')  
+```
+    
+7. En cada caso muestre el código requerido para crear los siguientes patrones de números o texto:
+
+    a. `r seq(10, 50, by = 10)`
+    b. `r seq(-10, 50, by = 10)`
+    c. `r -3:5`
+    d. `r rep(45, 10)`
+    c. `r rep('thanos', 5)`
+    
+8. Para cada comando, (a) describa para que sirve, (b) liste sus tres primeros argumentos, y (c) diga a que paquete pertence.
 
     - `runif`
     - `substr`
     - `install.packages`
     - `dir`
     
-4. Considere el siguiente script con código **R**:
+9. Considere el siguiente script con código **R**:
 
     ```{r, eval = F, prompt = F}
 library(graph)
@@ -440,7 +514,134 @@ g1
     - ¿Cuáles librerías fueron activadas?
     - Si se ejecutará todo en la consola, ¿de cuál objeto se imprimiría su contenido?
     - Ejecute en la consola la primera línea (`library(graph)`), si le sale un error, explique porque salio ese error. 
+    
+10. Verifique si tiene instalado el paquete `dismo`. Si no, descarguelo,  instalelo y activelo en su sesión de **R**. Luego responda las siguientes preguntas:
 
+    a. ¿Para qué sirve el paquete `dismo`?.
+    b. Busque el comando `gbif` e indique para sirve el comando.
+    b. Ejecute la siguiente orden: `gbif('solanum', 'acaule', download=FALSE)`. Usando la ayuda del comando, intente explicar el resultado. (Nota: debe tener conexión a internet).
+
+10. Considere la siguiente secuencia de ordenes de  **R** que fueron ejecutadas en la consola con su respectiva impresión:
+
+```{r, include = F}
+dir1 <- "/Users/pabloandres/Documents"
+dir2 <- paste0(dir1, '/Notas')
+if(!dir.exists(dir2)) dir.create(dir2) # se crea una carpeta 'Notas'
+```
+
+
+    ```{r, prompt = T,  eval= F}
+getwd()  # A
+```
+
+    ```{r, echo = F}
+dir1
+```
+
+    ```{r, prompt = T, eval= F}
+dir()   # B
+```
+
+    ```{r, echo = F}
+dir(dir1)
+```
+
+    ```{r, prompt = T, eval= F}
+setwd("/Users/pabloandres/Documents/Notas")  # C
+```
+
+    ```{r, prompt = T, eval= F}
+getwd()
+```
+
+    ```{r, echo = F}
+dir2
+```
+
+    ```{r, prompt = T, eval= F}
+nota1 <- 2.1
+nota2 <- 3.1
+nota3 <- 2.9
+nota.final <- nota1*0.2 + nota2*0.5 + nota3*0.3
+save(nota.final, file = 'minota.RData')   # D
+```
+
+    a. Explique con detalle que acción fue realizada en cada una de las líneas marcadas con los comentarios A, B, C y D.
+    b. En que carpeta quedó guardado el archivo `mininota.RData`
+    
+    ```{r, eval = F, include = F, echo = F}
+library(learnr)
+question("What number is the letter A in the alphabet?",
+  answer("8"),
+  answer("14"),
+  answer("1", correct = TRUE),
+  answer("23")
+)
+```
+
+    
+    c. Describa el contenido del archivo `mininota.RData`
+    
+```{r, include = F}
+# remocion de archivos y carpetas
+file.remove(dir2)
+```
+
+
+11. El siguiente script de código **R** requiere el archivo `pesticidas.RData`. 
+
+```{r farmPest, include=F}
+# Farm pesticide use in the United States 1964-1990 (million pounds of active ingredients)
+# Source: Braude & Low, 2010, An Introduction to Methods & Models in Ecology, Evolution & Conservation Biology. chapter 1, table 1.1
+farmPest <- data.frame(
+  year = c(1964, 1966, 1971, 1976, 1982, 1986, 1987, 1988, 1989, 1990),
+  herb = c(76, 112, 207, 374, 451, 410, 365, 372, 394, 393),
+  insect = c(143, 138, 127, 130, 71, 59, 57, 60, 61, 64),
+  other = c(72, 79, 130, 146, 30, 6, 7, 8, 8, 8)
+)
+save(farmPest, file = 'pesticidas.RData')
+```
+
+
+    ```{r, prompt = F, fig.show = 'hide'}
+# 12-may-2018
+# Grafico sobre el uso de herbicidas en Estados Unidos entre 1964 y 1990
+# en millones de libras de ingrediente activo.
+# Autor: Pedro Perez.
+
+# Datos:
+load('pesticidas.RData')  # coloque aqui lo que hace esta orden
+    
+# Se hace el grafico
+par(mar = c(3.5, 4, 2.5, 1), mgp = c(2,1,0), cex = 0.9)
+with(farmPest, 
+  plot(x = year, y = herb, xlab = 'Tiempo (Años)', 
+       ylab = 'Herbicidas\n(millones de libras de ingrediente activo)',
+       pch = 21, bg = 'skyblue', type = 'b', cex = 1.5,
+       main = 'Uso de herbicidas en granja en Estados Unidos')
+)
+```
+
+
+    a. Descargue el archivo `pesticidas.RData` desde [aquí](). Cree y establezca un directorio de trabajo. Dentro de esta carpeta, ubique el archivo `pesticidas.RData`. También cree un nuevo script que contenga el código dado arriba. Verifique que su espacio de trabajo este vacio.
+    
+    b. Ejecute el código y observe el resultado. ¿Cuáles objetos se crearon? Explore y describa el contenido de estos objetos.
+    c. ¿Qué hace la línea `load(pesticidas.RData)?` Escribalo en el código.
+    d. ¿Cuáles comandos se utilizan en el código?
+    e. Mencione el nombre de los argumentos usados en `par`.
+    f. ¿Cuántos argumentos se usaron en `with`, se usó el nombre de sus argumentos o sólo su valor?
+    g. Mencione el nombre de los argumentos usados en `plot`. 
+    h. Cambie el color del relleno de los puntos del gráfico con el argumento `bg` del comando `plot`. Seleccione un color de alguno de los `r length(colors())` colores que salen cuando se imprime la orden `colors()` en la consola. Guarde el nuevo gráfico con extensión `.jpg` en su directorio de trabajo.
+    i. Al final del código, agregue la siguiente línea para modificar el objeto cargado en el paso (b):
+  
+    ```{r}
+farmPest$total <- rowSums(farmPest[, 2:4])  
+```
+
+     Explore nuevamente el objeto y describa como cambio el objeto. 
+    
+    j. Agregue una línea al código que guarde un archivo llamado `pesticidas.RData` con todos los objetos usados durante la sesión. Note que como este archivo tiene el mismo nombre que el inicial, será reemplazado.
+    k. A este momento debe tener tres archivos en su directorio de trabajo. ¿Cuáles? **Comprima** la carpeta con estos tres archivos y envíela por correo al pguzman@ces.edu.co.
 
 ## Referencias
 
