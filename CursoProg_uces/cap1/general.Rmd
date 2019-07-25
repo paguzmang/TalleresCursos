@@ -623,7 +623,7 @@ with(farmPest,
 ```
 
 
-    a. Descargue el archivo `pesticidas.RData` desde [aquí](). Cree y establezca un directorio de trabajo. Dentro de esta carpeta, ubique el archivo `pesticidas.RData`. También cree un nuevo script que contenga el código dado arriba. Verifique que su espacio de trabajo este vacio.
+    a. Descargue el archivo `pesticidas.RData` desde [aquí](https://github.com/paguzmang/TalleresCursos/blob/master/CursoProg_uces/cap1/pesticidas.RData). Cree y establezca un directorio de trabajo. Dentro de esta carpeta, ubique el archivo `pesticidas.RData`. También cree un nuevo script que contenga el código dado arriba. Verifique que su espacio de trabajo este vacio.
     
     b. Ejecute el código y observe el resultado. ¿Cuáles objetos se crearon? Explore y describa el contenido de estos objetos.
     c. ¿Qué hace la línea `load(pesticidas.RData)?` Escribalo en el código.
