@@ -20,7 +20,6 @@ output:
 
 ```{r setup, include=FALSE}
 library(tidyverse)
-library(plyr)
 library(knitr)
 opts_chunk$set(fig.align = T, warning = F, comment = NULL)
 source('creacion_objetos.R')  # este codigo solicita la libreria 'Sleuth3'
@@ -198,8 +197,8 @@ Al aplicar la función .red[`descrip_obj`] a cada objeto, obtenemos lo siguiente
 ```{r, echo = F}
 # Tipo, clase y modo de todos los objetos (no correr !!)
 globalenv() %>%
-  eapply(descrip_obj) %>% ldply(.fun = function(x) x) %>% 
-  arrange(class) %>% dplyr::rename(objeto = .id) %>% kable(format = 'html')
+  eapply(descrip_obj) %>% map_dfr(.f = function(x) x, .id = 'objeto') %>% 
+  arrange(class) %>% kable(format = 'html')
 ```
 
 ---
@@ -221,6 +220,8 @@ background-size: contain
 # Filtrar o indexar objetos
 
 ---
+name: descripBirdKeep
+
 ## Filtrar o indexar objetos
 
 ### Vectores
@@ -314,7 +315,7 @@ Los argumentos `levels` y `labels` son opcionales.
 
 ### Matrices
 
-Usaremos el objeto .red[`ecoli`], una matriz de 3 filas y 5 columnas que almacena una los .red[conteos] del número de muestras de agua contaminadas con la bacteria _E. coli_ de acuerdo a la locación en una bahia y a la fuente animal de la cual proviene la bacteria.
+Usaremos el objeto .red[`ecoli`], una matriz de 3 filas y 5 columnas que almacena los .red[conteos] del número de muestras de agua contaminadas con la bacteria _E. coli_ de acuerdo a la locación en una bahia y a la fuente animal de la cual proviene la bacteria.
 
 ```{r}
 ecoli   # se imprime para ver el objeto
@@ -323,7 +324,7 @@ descrip_obj(ecoli)  # tipo, clase y modo
 
 ---
 
-### Matrices
+### Matrices: Algunas operaciones con matrices
 
 ```{r}
 dim(ecoli)          # dimension: nro. de filas y nro. de col
@@ -334,7 +335,16 @@ Funciona también `addmargins(ecoli, margin = 1)` o `addmargins(ecoli, margin = 
 
 ---
 
-### Matrices
+### Matrices: Algunas operaciones con matrices
+
+```{r}
+ecoli     # matriz original
+t(ecoli)  # transponer la matriz
+```
+
+---
+
+### Matrices: Algunas operaciones con matrices
 
 ```{r}
 colSums(ecoli)     # totales por columna
@@ -344,7 +354,41 @@ prop.table(ecoli)  # prop. dividiendo por gran total (nota: considere argumento 
 
 ---
 
-### Matrices
+### Matrices: Algunas operaciones con matrices
+
+.pull-left[
+
+```{r mosaico, fig.show='hide'}
+# Grafico de Mosaico mostrando 
+# residuales de Pearson
+mosaicplot(x = ecoli, shade = T, las = 1, 
+           main = NA, xlab = 'Localidad', 
+           ylab = 'Fuente animal de E. coli')
+```
+
+Un gráfico de mosaico muestra el tamaño de cada celda en la tabla de contigencia.
+
+Se pueden aprovechar colores para mostrar algún rasgo de los datos, p.e., los residuales que indican desviaciones de la hipótesis de indpendencia entre las variables (fuente y localidad).
+
+La librería [`vcd`](https://rdrr.io/cran/vcd/) tiene mayores opciones para este tipo de gráficos y en general para la visualización y análisis de datos categóricos.
+
+]
+
+.pull-right[
+
+```{r mosaico.show, fig.width=6.3, fig.height=5.7, echo = F}
+# Grafico de Mosaico mostrando 
+# residuales de Pearson
+mosaicplot(x = ecoli, shade = T, las = 1, cex = 1.4, 
+           main = NA, xlab = 'Localidad', 
+           ylab = 'Fuente animal de E. coli')
+```
+
+]
+
+---
+
+### Matrices: Algunas operaciones con matrices
 
 ```{r}
 chisq.test(ecoli)  # Prueba Chi-cuadrado de Independencia
@@ -472,9 +516,12 @@ subset(lovett, subset = H > 0.8, select = c(STREAM, AREA, NO3, H))
     - `tail(lovett)`
     - `lovett$DOC[1:3]`
     - `subset(lovett, NO3 <= 15, NO3)`
+    - `subset(lovett, NO3 <= 15)$NO3`
     - `subset(lovett, NO3 <= 15, c(STREAM, NO3))`
 
 ---
+name: creaBirdKeep
+
 ## Filtrar o indexar objetos
 
 ### data.frame: ejercicios (continuación)
@@ -482,6 +529,211 @@ subset(lovett, subset = H > 0.8, select = c(STREAM, AREA, NO3, H))
 - Filtre la tabla por aquellas filas que tengan un valor de `TN` (Nitrogeno total) mayor a 40 y que la tabla resultante sólo tenga las columnas `STREAM`, `AREA` y `TN`.
 
 - El siguiente código intenta realizar un diagrama de dispersión entre las variables `NO3` y `r2.NH4`. El código es: `plot(x = NO3, y = r2.NH4)`. Sin embargo, al ejecutarse sale un error. Explique el error y corrija el código.
+
+- Creando un data.frame: Un data.frame se crea juntando vectores mediante el comando `data.frame`. Tome los vectores `AG`, `BK`, `CD`, `FM`, `LC`, `SS` y `YR` que contienen las variables asociadas al estudio de tenedores de aves y cáncer de pulmón descrito [atrás](#descripBirdKeep), y cree un data.frame:
+
+```{r}
+birdKeep <- data.frame(AG, BK, CD, FM, LC, SS, YR)  # creando un data.frame
+```
+
+Explore el objeto `birdKeep` usando lo aprendido sobre data.frame.
+---
+
+## Filtrar o indexar objetos
+
+### Listas
+
+Una lista puede almacenar objetos de múltiples tipos. Se crea con el comando `list`. En seguida creamos una lista que contenga algunos objetos:
+
+```{r}
+# Se crea una lista asignando etiquetas (o nombres) a sus objetos
+milista <- list(
+  birdKeep = BK, PFQ = lovett, bahia = ecoli
+) 
+```
+
+---
+
+### Listas
+
+```{r}
+# Se describe el objeto:
+descrip_obj(milista)
+
+# Longitud de la lista
+length(milista)
+
+# Nombres de los objetos dentro de la lista:
+names(milista)
+```
+
+---
+
+## Filtrar o indexar objetos
+
+### Listas
+
+Para filtrar listas se puede usar alguna de las siguientes opciones:
+
+* `[ i ]` Para sacar el objeto en la posición (o de nombre) `i`. El resultado es de tipo lista. Esta opción permite extraer uno o más objetos de la lista.
+
+* `[[ i ]]` Para sacar el objeto en la posición (o de nombre) `i`. El resultado es del mismo tipo que el del objeto `i`. Esta opción sólo permite extraer un objeto a la vez.
+
+* `$` Igual que con data.frame, para sacar un objeto usando su nombre. El resultado es del mismo tipo que el del objeto extraido. Esta alternativa es equivalente a `[[ i ]]`. Esta opción sólo permite extraer un objeto a la vez.
+
+---
+
+### Listas
+
+Compare las tres formas de filtrar `milista` al intentar sacar el objeto `bahia`:
+
+.pull-left[
+
+```{r}
+milista[ 'bahia' ]
+milista[[ 'bahia' ]]
+```
+
+]
+
+.pull-right[
+```{r}
+milista$bahia
+```
+
+Verifique el tipo de objeto en cada caso.
+
+]
+
+---
+
+### Listas
+
+Sacando más de un elemento por posición o por nombre (por espacio se omite el resultado):
+
+```{r, results='hide'}
+milista[ 1 ]               # el 1er. elemento
+milista[ c(1, 3) ]         # el 1ero. y 3er. elemento
+milista[c('bahia', 'BK')]  # los elementos de nombre 'bahia' y 'BK'
+```
+
+Verifique que en todos los casos el resultado es de tipo lista.
+
+---
+
+### Listas
+
+#### Ejercicios
+
+1. En cada caso, describa el filtro y verifique el tipo del objeto obtenido:
+
+    * `milista[ 2 ]`
+    * `milista[ c(3,1) ]`
+    * `milista[[ 2 ]]`
+    * `milista[[ 3 ]]`
+    * `milista$birdKeep`
+    * `milista$birdKeep[1:3]`
+    * `milista$bahia[ , c(4,1)]`
+    * `subset(milista$PFQ, TN < 20)`
+
+2. Obtenga la 2da. y 3era. fila de la matriz `bahia` que esta dentro de `milista`.
+
+3. Obtenga las columnas STREAM, AREA y DOC del objeto PFQ que esta dentro de `milista` para las filas con AREA mayores a 1000.
+
+---
+class: middle , center, inverse
+
+background-image: url(imagenes_fondo/ppt_3_transicion.png)
+background-size: contain
+
+
+# Ejemplos de Aplicación
+
+---
+
+## Ejemplos de Aplicación
+
+### Prueba Chi-cuadrado
+
+Ejecute una prueba chi-cuadrado sobre el objeto `ecoli` y examine el tipo del objeto resultante:
+
+```{r, results='hide'}
+res <- chisq.test(ecoli)
+descrip_obj(res)   # tipo, clase y modo
+names(res)         # nombres de los objetos contenidos en res
+```
+
+1. Revise la impresión del resultado de la prueba. Compare la impresión con los objetos contenidos en el objeto. ¿Cuáles resultados no se muestran en la impresión?
+1. Obtenga el estadístico de la prueba y el valor $p$ de una sola vez. Revise su tipo.
+2. Obtenga sólo el valor $p$. Revise su tipo.
+3. Obtenga las frecuencias esperadas (`expected`). Revise su tipo.
+
+---
+
+## Ejemplos de Aplicación
+
+### Regresión logística
+
+Use el data.frame `birdKeep` creado [atrás](#creaBirdKeep) con los datos tenedores de aves y cáncer de pulmón para ejecutar una regresión logística mediante el comando `glm`:
+
+```{r, results='hide'}
+# Se ejecuta una regresion logistica:
+m <- glm(LC ~ AG + FM + SS + CD + YR + BK, data = birdKeep, 
+         family = binomial(link = 'logit'))
+descrip_obj(m)   # tipo, clase y modo del objeto
+names(m)         # nombres del objeto
+
+# Se guarda el summary del modelo:
+m.sum <- summary(m)
+descrip_obj(m.sum)  # tipo, clase y modo del objeto
+names(m.sum)        # nombres del objeto
+```
+
+1. Desde el objeto `m`, imprima los coeficientes del modelo. Revise el tipo del objeto.
+2. Desde el objeto `m.sum`, imprima los coeficientes del modelo. Revise el tipo de objeto.
+
+---
+
+## Ejemplos de Aplicación
+
+### Análisis de componentes princiaples
+
+Use el data.frame `lovett` con datos sobre variables fiscoquímicas del agua en 37 quebradas de cierta zona montañosa en Estados Unidos, realice un análisis de componentes principales sobre las variables fisicoquímicas mediante el comando `prcomp`:
+
+```{r, results='hide'}
+acp <- prcomp(lovett[, -c(1:5, 9, 15)], center = T, scale. = T)  # ACP
+descrip_obj(acp)        # tipo, clase y modo
+names(acp)              # nombres del objeto
+
+sum.acp <- summary(acp) # se guarda un summary del ACP
+descrip_obj(sum.acp)    # tipo, clase y modo
+names(sum.acp)          # nombres del objeto
+```
+
+
+1. Desde el objeto `acp`, imprima el objeto `rotation` pero sólo para sus tres primeras columnas.
+2. Desde el objeto `sum.acp`, imprima la importancia de las componentes. Revise el tipo del objeto.
+
+---
+class: middle , center, inverse
+
+background-image: url(imagenes_fondo/ppt_3_transicion.png)
+background-size: contain
+
+
+# Conclusiones
+
+---
+
+## Conclusiones
+
+* **R** maneja diferentes tipos de objetos para almacenar datos y esto lo hace muy versatil para enfrentar diferentes escenarios de análisis.
+
+* Todos los objetos se filtran usando la plantilla `objeto[ i ]` para extraer los elementos que están en la posición `i`. Sin embargo, dependiendo del tipo de objeto existen particularidades. Por ejemplo `[[ i ]]` o `$` para data.frame y listas.
+
+* Los resultados de análisis estadísticos se generan en mútiples objetos de diferente tipo, pero se guardan con frecuencia en un sólo objeto tipo lista. Así, para manipular estos resultados es necesario conocer como manipular todos los tipos de objetos.
+
+
 
 
 ```{r refs, echo=FALSE, results="asis", eval = F}
