@@ -8,6 +8,10 @@ En este taller estudiaremos de forma colaborativa la secuencia de conceptos: **i
 
 - Sesión 1. Conceptos de repaso (parte 1). [Objetos en R](Taller_R_uces_2_2019/07_22_Objetos/07_22_Objetos.html)
 - Sesión 2. Conceptos de repaso (parte 2). [Objetos en R](Taller_R_uces_2_2019/07_22_Objetos/07_22_Objetos.html)
+- Sesión 3. Importar y Exportar (parte 1).
+    * Comandos: `read.table`, `read_excel` (paquete: `readxl`), `write.table`, `write.xlsx` (paquete: `openxlsx`)
+    * [Data Import](https://r4ds.had.co.nz/data-import.html) del libro _R for Data Science_.
+    * Cápitulo 6 (_Reading Data in R_) del libro: Lander, J.P. (2017). _R for everyone. Advanced Analytics and Graphics_. 2ed. Addison-Wesley.      
 
 <br>
 <br>
