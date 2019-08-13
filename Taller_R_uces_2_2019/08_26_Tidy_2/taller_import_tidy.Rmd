@@ -15,12 +15,19 @@ En este taller practicaremos operaciones sobre importar y organizar (tidy) datos
 
 ---
 
+## Descripción de los datos
+
+Se midió una respuesta continua a sujetos en tres momentos o tiempos consecutivos (`t1`, `t2` y `t3`). Los sujetos fueron asignados a dos tratamientos (`a` y `b`) y además se registró el sexo (`fem` y `masc`) de cada sujeto. El objeto es explorar si existen diferencias de la respuesta entre los tiempos de medición, entre los tratamientos y entre genéros. Los datos están separados en dos archivos: `datosLong1.xlsx` y `datosLong2.csv`.
+
 ## Preparación 
 
 Active la siguiente librerías:
 
-```{r}
+```{r lib}
 library(tidyverse)  # con esto se instalan: dplyr; tidyr; ggplot2; etc.
+library(openxlsx)   # para comando read.xlsx
+library(readxl)     # para comando read_excel
 ```
 
+Descargue los archivos con los datos haciendo 
 
