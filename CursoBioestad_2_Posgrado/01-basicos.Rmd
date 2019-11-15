@@ -1,0 +1,39 @@
+# Conceptos básicos {#basicos}
+
+La Estadística nos permite identificar patrones, probar hipótesis o generar conclusiones desde conjuntos de datos donde la variación aleatoria prevalece. El insumo de la Estadística recae sobre aspectos como _variables_,  _población_, _muestra_, etc. En seguida se dá una descripción de tales aspectos.
+
+## Variables
+
+Una variable es una característica o atributo común a un conjunto de elementos de interés (p.e., personas, un arboles, caja de petri, etc.) y que toma valores diferentes de un elemento a otro. Las variables se pueden clasificar desde diferentes puntos de vista. Aquí algunos.
+
+### Variables por el tipo de valor que toman
+
+Categórica (nominal u ordinal); numérica
+
+### Variables por su escala
+
+No se
+
+### Variables por el rol en el diseño del estudio
+
+Respuestas; explicativas (también predictora, factor, covariable); auxiliares.
+
+## Población y muestra
+
+La población incluye el conjunto completo de elementos sobre el cuál se quiere hacer inferencia. La muestra es un grupo elemetos que aún.
+
+## Organización de los datos
+
+Los datos se pueden organizar 
+
+### Formato largo o univariado
+
+Este formato cada fila es una unidad de observación y cada columna una variable
+
+### Formato ancho o multivariado
+
+La misma variable se ubica en varias columnas de acuerdo a una variable de agrupamiento tal como el tiempo.
+
+
+
+
