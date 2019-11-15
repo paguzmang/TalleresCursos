@@ -56,13 +56,3 @@ rm(wb, datos)
 datos %>% slice(31:60) %>% select(-sexo, -trat) %>%
   write.table(file = 'datosLong2.csv', quote = F, sep = ';', 
               col.names = T, row.names = F)
-
-
-
-
-
-
-
-
-
-
