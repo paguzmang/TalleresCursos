@@ -29,3 +29,8 @@ En este taller estudiaremos de forma colaborativa la secuencia de conceptos: **i
 Material sobre curso de programación
 
 - [General](CursoProg_uces/cap1/general.html)
+
+### Cursos Bioestadística (posgrado, semestre 1 de 2020, [UCES](https://www.ces.edu.co/))
+
+- [Bioestadística 1](CursoBioestad_2_Posgrado/_book/index.html)
+
