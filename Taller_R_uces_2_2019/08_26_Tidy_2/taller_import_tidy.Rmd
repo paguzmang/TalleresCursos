@@ -29,5 +29,13 @@ library(openxlsx)   # para comando read.xlsx
 library(readxl)     # para comando read_excel
 ```
 
-Descargue los archivos con los datos haciendo 
+Descargue los archivos de datos o importe los datos directamente usando una ruta desde internet:
+
+```{r}
+ruta_a_xlsx <- 'https://github.com/paguzmang/TalleresCursos/raw/master/Taller_R_uces_2_2019/08_26_Tidy_2/datosLong1.xlsx'
+datosLong1  <- read.xlsx(ruta_a_xlsx, sheet = 'datos', startRow = 4)
+```
+
+
+
 

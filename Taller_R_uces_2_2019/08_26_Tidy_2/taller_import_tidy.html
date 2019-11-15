@@ -383,7 +383,9 @@ summary {
 <pre class="r"><code>library(tidyverse)  # con esto se instalan: dplyr; tidyr; ggplot2; etc.
 library(openxlsx)   # para comando read.xlsx
 library(readxl)     # para comando read_excel</code></pre>
-<p>Descargue los archivos con los datos haciendo</p>
+<p>Descargue los archivos de datos o importe los datos directamente usando una ruta desde internet:</p>
+<pre class="r"><code>ruta_a_xlsx &lt;- &#39;https://github.com/paguzmang/TalleresCursos/raw/master/Taller_R_uces_2_2019/08_26_Tidy_2/datosLong1.xlsx&#39;
+datosLong1  &lt;- read.xlsx(ruta_a_xlsx, sheet = &#39;datos&#39;, startRow = 4)</code></pre>
 </div>
 
 
