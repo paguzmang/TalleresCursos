@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<html lang="" xml:lang="">
   <head>
     <title>Objetos en R</title>
     <meta charset="utf-8" />
@@ -19,6 +19,7 @@ class: left, middle, my-title, title-slide
 # Objetos en R
 ## ¿Porqué es importante diferenciarlos?
 ### Pablo Andrés Guzmán
+### Universidad CES | Programa de Biología
 ### 22 Julio 2019
 
 ---
@@ -821,16 +822,14 @@ lovett$STREAM   # es equivalente a lovett[, 'STREAM']
 ```
 
 ```
- [1] "Santa Cruz"   "Colgate"      "Halsey"       "Batavia Hill"
- [5] "Windham Ridg" "Silver Sprin" "Little Timbe" "Hunter"      
- [9] "West Kill"    "Mill"         "Kelly Hollow" "Pigeon"      
-[13] "Biscuit"      "Fall"         "Bear Hole"    "Buttermilk F"
-[17] "Rondout"      "Kanape"       "Woodland Val" "Broadst Holl"
-[21] "Pecoy"        "Prediger"     "Bear Pen"     "Weaver"      
-[25] "BWS6"         "Halcott"      "Tonshi"       "Grog Kill"   
-[29] "Hollow Tree"  "Lost Clove"   "Black"        "Styles"      
-[33] "Warners"      "Kittle"       "Traver Hollo" "Willowemoc"  
-[37] "Myrtle"       "Becker Hollo"
+ [1] "Santa Cruz"   "Colgate"      "Halsey"       "Batavia Hill" "Windham Ridg"
+ [6] "Silver Sprin" "Little Timbe" "Hunter"       "West Kill"    "Mill"        
+[11] "Kelly Hollow" "Pigeon"       "Biscuit"      "Fall"         "Bear Hole"   
+[16] "Buttermilk F" "Rondout"      "Kanape"       "Woodland Val" "Broadst Holl"
+[21] "Pecoy"        "Prediger"     "Bear Pen"     "Weaver"       "BWS6"        
+[26] "Halcott"      "Tonshi"       "Grog Kill"    "Hollow Tree"  "Lost Clove"  
+[31] "Black"        "Styles"       "Warners"      "Kittle"       "Traver Hollo"
+[36] "Willowemoc"   "Myrtle"       "Becker Hollo"
 ```
 
 ---
@@ -1190,9 +1189,25 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     }
     deleted = true;
   });
-})();</script>
-
-<script>
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
 (function() {
   var links = document.getElementsByTagName('a');
   for (var i = 0; i < links.length; i++) {
@@ -1201,7 +1216,23 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     }
   }
 })();
-</script>
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
 
 <script>
 slideshow._releaseMath = function(el) {
