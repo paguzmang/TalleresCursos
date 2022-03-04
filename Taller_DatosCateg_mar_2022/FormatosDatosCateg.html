@@ -192,7 +192,7 @@ div.csl-entry {
 <div id="tipos-de-sangre" class="section level3">
 <h3>Tipos de Sangre</h3>
 <p><span class="citation">Carmona-Fonseca (2006)</span> reporta datos de tipos sanguíneos para una muestra de 827 trabajadores afiliados al Seguro Social en el valle de Aburrá y en el cercano oriente antioqueño. Su objetivo fue aportar al conocimiento de la distribución de los tipos sanguíneos en la región. Los datos se encuentran el archivo <a href="https://drive.google.com/file/d/10r4UN13WdXxcuvUNv7H5_c5ai0aYwolb/view?usp=sharing" target="Blank1">carmonaABO.csv</a> en el cual cada fila es un sujeto y cada columna es una variable y las columnas están separadas por una coma. Importe los datos con el siguiente código:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>carmona <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;carmonaAB0.csv&quot;</span>)   <span class="co"># se importan los datos</span></span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>carmona <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">file =</span> <span class="st">&quot;carmonaABO.csv&quot;</span>)   <span class="co"># se importan los datos</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(carmona)                                   <span class="co"># se imprime su estructura</span></span></code></pre></div>
 <pre><code>&#39;data.frame&#39;:   827 obs. of  4 variables:
  $ sujeto: int  1 2 3 4 5 6 7 8 9 10 ...
@@ -608,7 +608,7 @@ sp    present absent
   sp1      56     48
   sp2      50     38</code></pre>
 <p>El argumento <code>margin</code> del comando <code>margin.table</code> permite indicar cuales dimensiones se quiere que permanezcan. Aquellas dimensiones ausentes en este argumento serán colapsadas (sumadas) y desaparecerán en el arreglo resultante.</p>
-<p>Al argumento <code>margin</code> también le podemos indicar todas las dimensiones, pero en <strong>nuevo orden</strong>. En este caso, el arreglo resultante tendrá el nuevo orden en sus dimensiones:</p>
+<p>Al argumento <code>margin</code> también le podemos indicar todas las dimensiones, pero en un <strong>nuevo orden</strong>. En este caso, el arreglo resultante tendrá el nuevo orden en sus dimensiones:</p>
 <div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cambiando el orden de las dimensiones del arreglo original</span></span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="co"># La variable en la dimension 3 se pasa a la dimension 2 y viceversa</span></span>
 <span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>zar8r <span class="ot">&lt;-</span> <span class="fu">margin.table</span>(<span class="at">x =</span> zar8, <span class="at">margin =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">2</span>))</span>

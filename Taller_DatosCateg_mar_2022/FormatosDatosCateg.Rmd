@@ -111,7 +111,7 @@ sueno <- data.frame(
 @carmona2006 reporta datos de tipos sanguíneos para una muestra de `r nrow(carmona)` trabajadores afiliados al Seguro Social en el valle de Aburrá y en el cercano oriente antioqueño. Su objetivo fue aportar al conocimiento de la distribución de los tipos sanguíneos en la región. Los datos se encuentran el archivo  [carmonaABO.csv](https://drive.google.com/file/d/10r4UN13WdXxcuvUNv7H5_c5ai0aYwolb/view?usp=sharing){target="Blank1"} en el cual cada fila es un sujeto y cada columna es una variable y las columnas están separadas por una coma. Importe los datos con el siguiente código:
 
 ```{r, eval = F}
-carmona <- read.csv(file = "carmonaAB0.csv")   # se importan los datos
+carmona <- read.csv(file = "carmonaABO.csv")   # se importan los datos
 str(carmona)                                   # se imprime su estructura
 ```
 
@@ -432,7 +432,7 @@ zar8.sp.d
 
 El argumento `margin` del comando `margin.table` permite indicar cuales dimensiones se quiere que permanezcan. Aquellas dimensiones ausentes en este argumento serán colapsadas (sumadas) y desaparecerán en el arreglo resultante.
 
-Al argumento `margin` también le podemos indicar todas las dimensiones, pero en **nuevo orden**. En este caso, el arreglo resultante tendrá el nuevo orden en sus dimensiones:
+Al argumento `margin` también le podemos indicar todas las dimensiones, pero en un **nuevo orden**. En este caso, el arreglo resultante tendrá el nuevo orden en sus dimensiones:
 
 ```{r}
 # Cambiando el orden de las dimensiones del arreglo original
