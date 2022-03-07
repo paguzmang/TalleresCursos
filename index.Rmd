@@ -4,5 +4,8 @@
 
 ### Taller R (semestre 1 de 2022, [UCES](https://www.ces.edu.co/))
 
-- Sesión 1. Introducción a Shiny
-- Sesión 2. Manejo de datos categóricos en **R**. Parte 1: [Formatos de organización y generación de tablas de contingencia](Taller_DatosCateg_mar_2022/FormatosDatosCateg.html)
+- **Sesión 1**. Introducción a Shiny
+
+- **Sesión 2**. Manejo de datos categóricos en **R**. Parte 1: [Formatos de organización y generación de tablas de contingencia](Taller_DatosCateg_mar_2022/FormatosDatosCateg.html)
+
+- **Sesión 3**. Manejo de datos categóricos en **R**. Parte 2: Manipulando los niveles de un factor con el paquete `forcats`.
