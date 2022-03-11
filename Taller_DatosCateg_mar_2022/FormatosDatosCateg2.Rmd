@@ -48,7 +48,6 @@ library(knitr)
 library(tidyverse)
 library(checkdown)
 library(details)
-library(webexercises)
 library(wakefield)
 library(randomNames)
 library(kableExtra)
@@ -78,8 +77,12 @@ colpkg <- function(x) colFmt(x = x, color = "goldenrod")
 klippy::klippy(position = "right")
 ```
 
-```{r, echo = F}
-rintimg::img_intensify()
+```{r, echo = F, eval = F}
+rintimg::img_intensify(target = ".png")  # para hacer zoom en imagenes
+# Nota: el problema con esto es que tambien incluye la imagen del icono
+# que pone el paquete klippy en la esquina superior de los chunk's de codigo
+# entonces cuando se hace clic en este icono para copiar el codigo
+# se agranda la imagen del codigo y esto es molesto.
 ```
 
 
@@ -102,8 +105,13 @@ dat <- read.csv(file = "datos/tratSimul.csv")
 
 ## Paquetes y comandos
 
-En este recurso usaremos el **tidyverse**, principalmente el comando `mutate` (del paquete **dplyr**) y algunos comandos del paquete **forcats**. También, de este mismo grupo de paquetes, aplicaremos el operador `%>%` ("pipe") para encadenar comandos. Para activar los paquetes del **tidyverse** utilice el siguiente código: `library(tidyverse)`.
+En este recurso usaremos el [**tidyverse**](https://www.tidyverse.org/){target="Blank1"}, principalmente el comando `mutate` (del paquete [**dplyr**](https://dplyr.tidyverse.org/){target="Blank2"}), algunos comandos del paquete [**forcats**](https://forcats.tidyverse.org/){target="Blank3"} y el paquete [**ggplot2**](https://ggplot2.tidyverse.org/){target="Blank4"} para gráficar. También, de este mismo grupo de paquetes, aplicaremos el operador `%>%` ("pipe") (del paquete [**magrittr**](https://magrittr.tidyverse.org/){target="Blank5"}) para encadenar comandos. Para activar los paquetes del **tidyverse** utilice el código: 
 
+```{r, eval = F}
+library(tidyverse)  # activando paquetes del tidyverse (ggplot2, forcats, dplyr, magrittr, etc.)
+```
+
+<br>
 
 ### Operador "pipe" (`%>%`)
 
@@ -133,15 +141,15 @@ include_graphics("images/pipe_flechas.png")
 
 ### Comandos del paquete `forcats`
 
-La mayoría de comandos del paquete **forcats** inician con el prefijo `fct_`, todos ellos diseñados para realizar operaciones de rutina con variables categóricas o factores. Algunos comandos son:
+La mayoría de comandos del paquete [**forcats**](https://forcats.tidyverse.org/){target="Blank3"} inician con el prefijo `fct_`, todos ellos diseñados para realizar operaciones de rutina con variables categóricas o factores. Algunos comandos son:
 
 ```{r, echo = F}
 tibble(
  Comando = c("`fct_relevel`", "`fct_recode`", "`fct_rev`", 
              "`fct_infreq`", "`fct_inorder`", "`fct_reorder`" ),
- Descripción = c("Permite reordenar los niveles de un factor usando diferentes alernativas",
+ Descripción = c("Permite reordenar los niveles de un factor, a mano, usando diferentes alernativas",
                  "Permite cambiar las etiquetas o reagrupar los niveles del factor",
-                 "Invierte el orden los niveles de un factor",
+                 "Invierte el orden de los niveles de un factor",
                  "Ordena los niveles de un factor de acuerdo a su frecuencia en el vector",
                  "Ordena los niveles de un factor de acuerdo al orden en el que aparezcan en el vector",
                  "Ordena los niveles de un factor de acuerdo a valores de una variable numérica resumida por funciones como la media o mediana")
@@ -152,8 +160,9 @@ tibble(
 ```
 
 
-Descargue una hoja de referencia del paquete **forcats** [aquí](cheat_sheet_forcats.pdf){target="Blank"}.
+Descargue una hoja de referencia del paquete **forcats** [aquí](cheat_sheet_forcats.pdf){target="Blank5"}. También puede consultar la ayuda de cada comando usando el código: `?fct_reorder`, `?fct_relevel`, etc.
 
+<br>
 
 ## Datos de prueba {#datos}
 
@@ -186,7 +195,7 @@ summary(dat$Age)
 
 ### Categorizando una variable numérica {#categ-num}
 
-En una copia del data.frame `dat`, cree o agregue una nueva variable llamada `AgeF` que tenga la edad (`Age`) convertida en una variable categórica con tres niveles. Cuando imprima el `str` de la nueva tabla debe salir algo como lo siguiente:
+**Ejercicio:** En una copia del data.frame `dat`, cree o agregue una nueva variable llamada `AgeF` que tenga la edad (`Age`) convertida en una variable categórica con tres niveles. Cuando imprima el `str` de la nueva tabla debe salir algo como lo siguiente:
 
 ```{r, include = F}
 # Se crea una nueva tabla (dat1) con una variable nueva (AgeF)
@@ -244,7 +253,7 @@ dat %>%               # desde dat ...
   levels()            # se consultan los niveles del factor y su orden
 ```
 
-En la copia de la tabla creada para el ejercicio anterior, actualice la columna `Improved` cambiando el orden de los niveles de esta variable de tal forma que el nuevo orden sea: `None`, `Low`, `Medium` y `High`. Para esto utilice el comando `fct_relevel` en conjunto con `mutate`. Finalice escribiendo código que verifique la transfromación.
+**Ejercicio:** En la copia de la tabla creada para el ejercicio anterior, actualice la columna `Improved` cambiando el orden de los niveles de esta variable de tal forma que el nuevo orden sea: `None`, `Low`, `Medium` y `High`. Para esto utilice el comando `fct_relevel` en conjunto con `mutate`. Finalice escribiendo código que verifique la transfromación.
 
 :::: {.orangebox data-latex=""}
 
@@ -275,7 +284,7 @@ xtabs(~ Treatment + Improved, data = dat1) %>%
 
 ### Re-etiquetando los niveles de un factor {#reetiq}
 
-En la misma copia de la tabla creada en el primer ejercicio, cree nuevas variables en las cuales se cambie las etiquetas de las categorías de las variables `Treatment`, `Sex` e `Improved` por unas en español. Para esto utilice el comando `fct_recode` en conjunto con `mutate`. Finalice escribiendo código que verifique la transfromación.
+**Ejercicio:** En la misma copia de la tabla creada en el primer ejercicio, cree nuevas variables en las cuales se cambie las etiquetas de las categorías de las variables `Treatment`, `Sex` e `Improved` por unas en español. Para esto utilice el comando `fct_recode` en conjunto con `mutate`. Finalice escribiendo código que verifique la transfromación.
 
 :::: {.orangebox data-latex=""}
 
@@ -310,7 +319,9 @@ xtabs(~ Sex + genero, data = dat1)
 
 ### Re-categorizar los niveles de un factor {#recateg}
 
-Aquí nos referimos a cambiar el agrupamiento de los niveles de un factor generando nuevos (menos) niveles. En la misma copia de la tabla creada desde el primer ejercicio, agregue una nueva variable llamada `Mejora3` en la cual los niveles `Media` y `Alta` conformen un sólo nivel etiquetado como `Marcada`. Utilice para esto, de nuevo, el comando `fct_recode` dentro del comando `mutate`. Termine escribiendo código **R** que permita verificar el cambio.
+Aquí nos referimos a cambiar el agrupamiento de los niveles de un factor generando nuevos (menos) niveles. 
+
+**Ejercicio:** En la misma copia de la tabla creada desde el primer ejercicio, agregue una nueva variable llamada `Mejora3` en la cual los niveles `Media` y `Alta` conformen un sólo nivel etiquetado como `Marcada`. Utilice para esto, de nuevo, el comando `fct_recode` dentro del comando `mutate`. Termine escribiendo código **R** que permita verificar el cambio.
 
 :::: {.orangebox data-latex=""}
 
@@ -357,6 +368,8 @@ dat1 %>%
   scale_fill_brewer(direction = -1, palette = "YlGn") +
   labs(x = "Edad", y = "Frecuencia (%)", fill = "Mejora de\nsíntomas")
 ```
+
+**Ejercicio:**
 
 - De acuerdo al gráfico ¿concluiría que el tratamiento si parece estar asociado con una mejora en los síntomas de la enfermedad? De existir un efecto del tratamiento, este sería el mismo en todos los grupos de edad?
 
