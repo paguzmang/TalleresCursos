@@ -401,6 +401,112 @@ dat1 %>%
 
 <br>
 
+En otro ejemplo, considere el siguiente gráfico que muestra la misma información que el anterior, tan sólo que las etiquetas de la edad en el eje X están modificadas.
+
+
+```{r, fig.width=5, fig.height=4, echo = F}
+dat1 %>%
+  xtabs(~ trat + Mejora + AgeF + genero, data = .) %>%
+  prop.table(margin = c(1,3,4)) %>%
+  as.data.frame() %>%
+  mutate(
+    Mejora  = fct_rev(Mejora),
+    AgeF    = fct_recode(AgeF, "Joven\n20-40" = "Jov", 
+                               "Media\n40-60" = "Med", 
+                               "Alta\n60-80" = "Viej")
+                                
+  ) %>%
+  ggplot(aes(x = AgeF, y = Freq*100, fill = Mejora)) + geom_col() +
+  facet_grid(genero ~ trat) +
+  scale_fill_brewer(direction = -1, palette = "YlGn") +
+  labs(x = "Edad", y = "Frecuencia (%)", fill = "Mejora de\nsíntomas")
+```
+
+**Ejercicio:** Escriba código **R** que produzca el gráfico.
+
+:::: {.orangebox data-latex=""}
+
+**Código solución**
+
+```{r, fig.show='hide', class.source = "fold-hide"}
+# Creacion de data.frame con datos agrupados en formato largo
+# y generacion de grafico de barras apiladas con ggplot2. 
+
+# Igual que el codigo del ejericio anterior, solo se agrega una linea para modificar
+# AgeF con el comando fct_recode. La expresion "\n" genera un salto de linea.
+
+dat1 %>%
+  xtabs(~ trat + Mejora + AgeF + genero, data = .) %>%
+  prop.table(margin = c(1,3,4)) %>%
+  as.data.frame() %>%
+  mutate(
+    Mejora  = fct_rev(Mejora),
+    AgeF    = fct_recode(AgeF, "Joven\n20-40" = "Jov", 
+                               "Media\n40-60" = "Med", 
+                               "Alta\n60-80"  = "Viej")
+                                
+  ) %>%
+  ggplot(aes(x = AgeF, y = Freq*100, fill = Mejora)) + geom_col() +
+  facet_grid(genero ~ trat) +
+  scale_fill_brewer(direction = -1, palette = "YlGn") +
+  labs(x = "Edad", y = "Frecuencia (%)", fill = "Mejora de\nsíntomas")
+```
+
+::::
+
+
+
+```{r, fig.width=5, fig.height=4, echo = F, eval = F}
+# Version del mismo grafico usando geom_bar y position_fill
+# para dejar que el mismo ggplot2 calcule las proporciones
+# condicionales.
+dat1 %>%
+  mutate(
+    Mejora  = fct_rev(Mejora),
+    AgeF    = fct_recode(AgeF, "Joven\n20-40" = "Jov", 
+                               "Media\n40-60" = "Med", 
+                               "Alta\n60-80"  = "Viej")
+                                
+  ) %>%
+  ggplot(aes(x = AgeF,  fill = Mejora)) + 
+  geom_bar(position = position_fill()) +
+  facet_grid(genero ~ trat) +
+  scale_fill_brewer(direction = -1, palette = "YlGn") +
+  scale_y_continuous(labels = scales::label_percent(suffix = "") ) +
+  labs(x = "Edad", y = "Frecuencia (%)", fill = "Mejora de\nsíntomas")
+```
+
+<br>
+
+## Ejercicios
+
+Desde los mismos datos en el archivo `tratSimul.csv` y revisados en la sección anterior escriba código **R** que realice el siguiente gráfico:
+
+```{r, fig.width=5, fig.height=3, echo = F}
+dat1 %>%
+  xtabs(~ trat + Mejora + AgeF, data = .) %>%
+  prop.table(margin = c(1,3)) %>%
+  as.data.frame() %>%
+  mutate(
+    Mejora  = fct_rev(Mejora),
+    AgeF    = fct_recode(AgeF, "Joven" = "Jov", 
+                               "Media" = "Med", 
+                               "Alta"  = "Viej"),
+    trat = fct_recode(trat, Control = "Placebo",
+                            Aspirina = "Tratado")
+                                
+  ) %>%
+  ggplot(aes(x = AgeF, y = Freq*100, fill = Mejora)) + geom_col() +
+  facet_grid( ~ trat) +
+  scale_fill_brewer(direction = -1, palette = "YlGn") +
+  labs(x = "Edad", y = "Frecuencia (%)", fill = "Mejora de\nsíntomas")
+```
+
+Este gráfico fue construido con todos los datos (`r nrow(dat)` sujetos). La etiqueta `Placebo` se cambio por `Control` y la etiqueta `Tratado` se cambio por `Aspirina`. Las etiquetas de la edad también fueron modificadas como se observa en el gráfico. Note además que el género ya no aparece.
+
+
+<br>
+
 ## Para saber más
 
 ### Ordenando niveles por su frecuencia

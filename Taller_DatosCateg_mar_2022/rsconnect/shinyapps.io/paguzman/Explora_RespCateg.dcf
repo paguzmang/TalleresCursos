@@ -1,0 +1,14 @@
+name: Explora_RespCateg
+title: Explora_RespCateg
+username:
+account: paguzman
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5839472
+bundleId: 5676201
+url: https://paguzman.shinyapps.io/Explora_RespCateg/
+when: 1647120249.32877
+lastSyncTime: 1647120249.32881
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|apa.csl|cheat_sheet_forcats.pdf|FormatosDatosCateg.html|FormatosDatosCateg.Rmd|FormatosDatosCateg2.html|FormatosDatosCateg2.Rmd|images/multiway_sangre.jpeg|images/pipe_flechas.png|images/tabContigMultiWay_Zar2014_cap23_example_8.png|para_app_shiny.R|ref.bib|simul_resp_multinom.R|style_font_size.css
