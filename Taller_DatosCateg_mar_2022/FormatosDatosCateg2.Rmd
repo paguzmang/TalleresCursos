@@ -455,26 +455,9 @@ dat1 %>%
 ::::
 
 
+<br>
 
-```{r, fig.width=5, fig.height=4, echo = F, eval = F}
-# Version del mismo grafico usando geom_bar y position_fill
-# para dejar que el mismo ggplot2 calcule las proporciones
-# condicionales.
-dat1 %>%
-  mutate(
-    Mejora  = fct_rev(Mejora),
-    AgeF    = fct_recode(AgeF, "Joven\n20-40" = "Jov", 
-                               "Media\n40-60" = "Med", 
-                               "Alta\n60-80"  = "Viej")
-                                
-  ) %>%
-  ggplot(aes(x = AgeF,  fill = Mejora)) + 
-  geom_bar(position = position_fill()) +
-  facet_grid(genero ~ trat) +
-  scale_fill_brewer(direction = -1, palette = "YlGn") +
-  scale_y_continuous(labels = scales::label_percent(suffix = "") ) +
-  labs(x = "Edad", y = "Frecuencia (%)", fill = "Mejora de\nsíntomas")
-```
+> **Nota:** En el código de los dos gráficos anteriores, usamos los comandos `xtabs`, `prop.table` y `as.data.frame`  para calcular las frecuencias relativas o proporciones de las categorías de la variable respuesta. No obstante, el paquete **ggplot2** tiene el comando `geom_bar`, que con su argumento `position`, permiten hacer el mismo gráfico desde un data.frame con los datos crudos (donde cada fila es un sujeto). Para mayor detalle ir a esta [sección](#geom-bar).
 
 <br>
 
@@ -574,6 +557,29 @@ ggplot(ais, aes(x = hg, y = fct_reorder(sport, hg, median))) +
   geom_vline(xintercept = median(ais$hg), size = 0.5, linetype = "dashed") +
   labs(y = "Sport")
 ```
+
+### Ggplot2: `geom_bar` y `position_fill` para calcular frecuencias condicionales {#geom-bar}
+
+Arriba, en esta [sección](#graf), usamos los comandos `xtabs`, `prop.table`, y `as.data.frame` para realizar el cálculo de las frecuencias relativas condicionales de las categorías de la variable respuesta para despues hacer el gráfico con el comando `geom_col` de **ggplot2**.
+
+Nos podemos ahorrar el cálculo de estas frecuencias relativas si, en lugar de usar el comando `geom_col`, empleamos el comando `geom_bar`, el cual automáticamente realiza el conteo (que haría `xtabs`). Además, si utilizamos el argumento `position = position_fill()`, se calculan las frecuencias condicionales respectivas. A continuación el código completo:
+
+```{r, fig.width=5, fig.height=4}
+# Version de un mismo grafico de arriba, pero usando geom_bar y position_fill
+# para dejar que el mismo ggplot2 calcule las proporciones
+# condicionales.
+ggplot(dat1, aes(x = AgeF,  fill = fct_rev(Mejora)) ) + 
+  geom_bar(position = position_fill()) +
+  facet_grid(genero ~ trat) +
+  scale_fill_brewer(direction = -1, palette = "YlGn") +
+  scale_y_continuous(labels = scales::label_percent(suffix = "") ) +
+  labs(x = "Edad", y = "Frecuencia (%)", fill = "Mejora de\nsíntomas")
+```
+
+Observe que los datos deben estar en formato crudo, donde cada fila es un sujeto. Además, ya no es necesario mapear el eje `y` a una columna de frecuencia, pues el comando `geom_bar` automáticamente cálcula la frecuencia y realiza ese mapeo.
+
+
+
 
 
 
