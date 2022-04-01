@@ -1,0 +1,17 @@
+fibra,salvado,goma,hinchazon,n
+ninguna,no,no,ninguno,6
+salvado,si,no,ninguno,7
+goma,no,si,ninguno,2
+ambas,si,si,ninguno,2
+ninguna,no,no,bajo,4
+salvado,si,no,bajo,4
+goma,no,si,bajo,2
+ambas,si,si,bajo,5
+ninguna,no,no,medio,2
+salvado,si,no,medio,1
+goma,no,si,medio,3
+ambas,si,si,medio,3
+ninguna,no,no,alto,0
+salvado,si,no,alto,0
+goma,no,si,alto,5
+ambas,si,si,alto,2

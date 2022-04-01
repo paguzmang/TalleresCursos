@@ -1,0 +1,549 @@
+---
+title: "Pruebas de hipótesis con datos categóricos en R"
+subtitle: "Parte 1: **Pruebas en tablas r x c**"
+author: "Pablo Andrés Guzmán<br>Taller R y Rmarkdown"
+date: "Marzo 2022"
+output: 
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    number_sections: false
+    css: style_font_size.css
+    #code_folding: show
+    #df_print: kable
+csl: apa.csl
+#csl: http://www.zotero.org/styles/harvard1
+bibliography: /Users/pabloandres/Documents/Dropbox/Curso/mibase.bib
+link-citations: no
+---
+
+```{css, echo = F}
+.badCode {
+background-color: LIGHTGOLDENRODYELLOW;
+}
+/* dos columnas */
+.column-left{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+.column-right{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all !important;
+  word-wrap: initial !important;
+}
+```
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+library(checkdown)
+library(details)
+library(wakefield)
+library(randomNames)
+library(kableExtra)
+#library(learnr)
+opts_chunk$set(echo = TRUE, comment = NULL, warning = F, 
+               message = F, fig.align = 'center', class.output="badCode",
+               fig.width = 3.4, fig.height = 3)
+```
+
+```{r colFmt, include = F}
+# Funcion para colorear texto a discrecion en Rmarkdown
+# tomada de: https://stackoverflow.com/questions/29067541/how-to-change-the-font-color
+colFmt = function(x,color){
+  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste("\\textcolor{",color,"}{",x,"}",sep="")
+  else if(outputFormat == 'html')
+    paste("<font color='",color,"'>",x,"</font>",sep="")
+  else
+    x
+}
+colpkg <- function(x) colFmt(x = x, color = "goldenrod")
+```
+
+
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy(position = "right")
+```
+
+```{r, echo = F, eval = F}
+rintimg::img_intensify(target = ".png")  # para hacer zoom en imagenes
+# Nota: el problema con esto es que tambien incluye la imagen del icono
+# que pone el paquete klippy en la esquina superior de los chunk's de codigo
+# entonces cuando se hace clic en este icono para copiar el codigo
+# se agranda la imagen del codigo y esto es molesto.
+```
+
+
+***
+En el trabajo con variables categóricas es importante poder manipular las etiquetas de las categorías o niveles de la variable. A propóstio de esto, en esta sesión aprenderemos a:
+
+- categorizar una variable numérica
+- cambiar las etiquetas de los niveles en un factor
+- cambiar el orden de los niveles en un factor
+- reagrupar los niveles de un factor
+- usar lo anterior para apoyar el diseño de gráficos
+
+Para la mayoría de actividades usaremos comandos de **forcats** un paquete del **tidyverse** especializado en manipular factores.
+
+***
+
+```{r, echo = F, include = F, eval = F}
+# Entrando tabla de contingencia desde teclado
+datFibra <- array(
+  data = c(6,7,2,2, 4,4,2,5, 2,1,3,3, 0,0,5,2),
+  dim = c(4,4),
+  dimnames = list(
+    fibra     = c("ninguna", "salvado", "goma", "ambas"),
+    hinchazon = c("ninguno", "bajo", "medio", "alto")
+  )
+) %>%
+  as.table() %>%
+  as.data.frame() %>%
+  mutate(
+    fibra = as.character(fibra),
+    hinchazon = as.character(hinchazon),
+    salvado = ifelse(fibra == "ninguna" | fibra == "goma", "no", "si"),
+    goma    = ifelse(fibra == "ninguna" | fibra == "salvado", "no", "si")
+  ) %>% 
+  select(fibra, salvado, goma, hinchazon, Freq) %>%
+  rename(n = Freq)
+
+write_csv(x = datFibra, file = "datos/datFibra.csv")
+```
+
+## Librerías
+
+```{r}
+library(vcd)
+library(tidyverse)  
+library(MASS)
+```
+
+```{r, include = F}
+datFibra <- read.csv(file = "datos/datFibra.csv")
+```
+
+## Ejemplo 1: Fuentes de fibra e hinchazón estómacal
+
+### Problema y datos
+
+En un estudio se dió de comer a los participantes un nuevo tipo de galletas enriquecidas con fibra. Los sujetos estuvieron asignados a uno de cuatro tipos de galleta: sin fibra, con fibra a base de salvado, con fibra a base de goma o con fibra base de ambos, salvado y goma. Al poco tiempo luego de la ingesta, se le pidió a los participantes que reportaran si tuvieron síntomas de hinchazón estómacal como una de cuatro categorías: ninguna, baja, media o alta hinchazón. Los datos para los `r sum(datFibra$n)` sujetos se encuentran en el archivo [datFibra.csv](datos/datFibra.csv) de manera agrupada en formato largo. Use el siguiente código para importar los datos:
+
+```{r, eval = F}
+datFibra <- read.csv(file = "datFibra.csv")
+str(datFibra)  # esctructura de la tabla
+```
+
+```{r, echo = F}
+str(datFibra)
+```
+
+El propósito del ejercicio es evaluar si los síntomas de hinchazón están **asociados** a las categorías de `fibra` en los cuatro tipos de galleta. 
+
+<br>
+
+### Tabla de contingencia
+
+Un tabla de contingencia es el punto de partida del análisis. Antes revisemos los niveles (y su orden) de las variables `fibra` e `hinchazon`:
+
+```{r}
+factor(datFibra$fibra) %>% levels()      # niveles de fibra
+factor(datFibra$hinchazon) %>% levels()  # niveles de hinchazon
+```
+
+<br>
+
+Modificamos el orden de los niveles en ambas variables:
+
+```{r}
+datFibra <- mutate(datFibra, 
+  fibra     = fct_relevel(fibra, "ninguna", "goma", "salvado"),
+  hinchazon = fct_relevel(hinchazon, "ninguno", "bajo", "medio")
+)
+```
+
+<br>
+
+```{r, include=F}
+x1 <- "# Tabla de contigencia con totales marginales
+xtabs(n ~ fibra + hinchazon, data = datFibra) %>% 
+  addmargins()"
+
+x2 <- "# Tabla de contigencia de frec. relativas condicionales 
+# con totales marginales
+xtabs(n ~ fibra + hinchazon, data = datFibra) %>% 
+  prop.table(margin = 1) %>%
+  addmargins(2) %>%
+  round(3)*100"
+```
+
+:::: {.orangebox data-latex=""}
+
+**Ejercicios**
+
+1. Realice la siguiente tabla de contingencia:
+
+    ```{r, echo = F}
+# Tabla de contigencia con totales marginales
+xtabs(n ~ fibra + hinchazon, data = datFibra) %>% 
+  addmargins()
+```
+
+    ```{r, echo = F}
+details(x1, summary = "**Código solución**")
+```
+
+2. Realice la siguiente tabla de contigencia:
+
+    ```{r, echo = F}
+# Tabla de contigencia con totales marginales
+xtabs(n ~ fibra + hinchazon, data = datFibra) %>% 
+  prop.table(margin = 1) %>%
+  addmargins(2) %>%
+  round(3)*100
+```
+
+    ```{r, echo = F}
+details(x2, summary = "**Código solución**")
+```
+
+::::
+
+<br>
+
+
+
+### Gráfico exploratorio
+
+El siguiente gráfico muestra la frecuencia condicional de las categorías de `hinchazon` de acuerdo a la `fibra`:
+
+```{r, echo = F, fig.width=4.3, fig.height=2.3}
+xtabs(n ~ fibra + hinchazon, data = datFibra) %>%
+  prop.table(margin = 1) %>%
+  as.data.frame() %>%
+  ggplot(aes(y = fibra, x = Freq*100, fill = fct_rev(hinchazon))) +
+  geom_col() +
+  scale_fill_brewer(direction = -1, palette = "YlOrRd") +
+  labs(fill = "Hinchazón", y = "Galletas según\nfuente de fibra", 
+       x = "% de sujetos")
+```
+
+
+```{r sol1, include = F}
+sol1 <- '# Grafico de barras apiladas con frec. condicionales
+xtabs(n ~ fibra + hinchazon, data = datFibra) %>%
+  prop.table(margin = 1) %>%
+  as.data.frame() %>%
+  ggplot(aes(y = fibra, x = Freq*100, fill = fct_rev(hinchazon))) +
+  geom_col() +
+  scale_fill_brewer(direction = -1, palette = "YlOrRd") +
+  labs(fill = "Hinchazón", y = "Galletas según\\nfuente de fibra", 
+       x = "% de sujetos")'
+```
+
+:::: {.orangebox data-latex=""}
+
+**Ejercicios**
+
+- De acuerdo al gráfico, ¿la respuesta del hinchazón estómacal parece ser **independiente** del tipo de fibra en la galleta? Explique
+
+- Escriba código **R** que genere el gráfico.
+
+```{r, echo = F}
+details(sol1, summary = "**Código solución**")
+```
+
+::::
+
+<br>
+
+## Prueba de hipótesis
+
+La prueba chi-cuadrado permite probar:
+
+$$
+\begin{eqnarray*}
+H_0: & & \text{La fibra y el hinchazon son independientes}\\
+H_1: & & \text{La fibra y el hinchazon no son independientes (están asociadas)}\\
+\end{eqnarray*}
+$$
+
+Esta prueba se ejecuta en **R** con alguno de los siguientes comandos:
+
+```{r, echo = F}
+tibble(
+  Comando = c("`chisq.test`", "`summary`", "`assocstats`", "`CrossTable`"),
+  Paquete = c("stats", "base", "vcd", "gmodels"),
+  Descripción = c(
+    "Prueba Chi-cuadrado de independencia para dos variables o prueba chi-cuadrado de bondad de ajuste para una sóla variable. Permite revisar frecuencias esperadas y residuales. Saca una advertencia cuando al menos una frec. esperada es menor a 5.",
+    "Sobre objetos de clase `table`, genera una prueba chi-cuadrado de independencia para dos o más variables. Para tres o más variables realiza una prueba de independencia mutua. Saca una advertencia cuando al menos una frec. esperada es menor a 5.",
+    "Prueba Chi-cuadrado de independencia para dos variables y opcionalmente, estratificado por una tercera o más variables categóricas. Entrega además la prueba equivalente LRT y los coeficientes V de Cramer, Phi, y de contigencia.",
+    "Realiza tabla de contigencia en conjunto con prueba chi-cuadrado de independencia para dos variables. Permite revisar frec. esperadas y residuales. Hace también las pruebas de McNemar y de Fisher. Ver ayuda para detalles.")
+) %>%
+  kable() %>%
+  kable_styling(full_width = F) %>%
+  column_spec(3, width = "35em")
+```
+
+### Ejecución de la prueba
+
+
+```{r}
+# Se guarda tabla de contigencia
+d <- xtabs(n ~ fibra + hinchazon, data = datFibra)
+
+# Desde comando: chisq.test ----
+r <- chisq.test(d, correct = F); r
+
+# Desde comando: summary ----
+summary(d)
+
+# Desde comanado assocstats ----
+assocstats(d)
+```
+
+<br>
+<br>
+
+## Para saber más
+
+### Estadístico de prueba Chi-cuadrado {#stat-chisq}
+
+El estadístico de prueba Chi-cuadrado en una prueba de independencia para una tabla de contingencia de $r$ filas $\times$ $c$ columnas está dado por:
+
+\begin{equation}
+X^2 = \sum_{i = 1}^r\sum_{j = 1}^c \dfrac{(n_{ij} - e_{ij})^2}{e_{ij}}
+ (\#eq:statchisq)
+\end{equation}
+
+donde $n_{ij}$ es la frecuencia absoluta observada en la fila $i$ y columna $j$ de la tabla de contingencia y  $e_{ij}$ es la frecuencia absoluta esperada para la fila $i$ y la columna $j$ bajo la **hipótesis nula** de que existe **independencia** entre las variables.
+
+Si $\pi_{ij}$ es la proporción poblacional en la celda $\{i,j\}$ de la tabla y $\pi_{i\cdot}$ y $\pi_{\cdot j}$ son las proporciones poblacionales marginales de la fila $i$ y columna $j$ respectivamente, entonces la **hipótesis nula** de **independencia** se puede escribir como:
+
+$$H_0: \pi_{ij} = \pi_{i\cdot} \times \pi_{\cdot j}$$
+
+Con esta idea, la frecuencia absoluta esperada bajo H~0~ en la celda $\{i,j\}$ se obtiene como :
+
+\begin{equation}
+e_{ij} = \dfrac{n_{i\cdot} \times n_{\cdot j} }{n} = \dfrac{[\text{Total Fila } i] \times [\text{Total Col } j] }{[\text{Gran total}]}
+(\#eq:frec-esp)
+\end{equation}
+
+donde: 
+
+\begin{eqnarray*}
+n_{i\cdot} = \sum_{j = 1}^c n_{ij} & \quad \text{total o suma de las frec. absolutas observadas en la fila } i \\
+n_{\cdot j} = \sum_{i = 1}^r n_{ij} & \quad \text{total o suma de las frec. absolutas observadas en la columna } j \\
+n = \sum_{i = 1}^r\sum_{j = 1}^c n_{ij} & \quad \text{total o suma de todas las frec. absolutas observadas o Gran total}
+\end{eqnarray*}
+
+El estadístico $X^2$ sigue una distribución Chi-cuadrado con $(r-1)(c-1)$ grados de libertad si la hipótesis nula de independencia es cierta.
+
+<br>
+
+### Medidas de asociación desde la prueba chi-cuadrado
+
+Existen tres coeficientes derivados del estadístico de prueba Chi-cuadrado que permiten medir la asociación entre las variables implicadas en la tabla de contingencia. 
+
+- [Coeficiente de contingencia](#cont)
+
+- [V de Cramer](#cramer)
+
+- [Coeficiente Phi](#phi)
+
+A continuación se describen estos coeficientes.
+
+<br>
+
+#### **Coeficiente de contigencia** {#cont}
+
+El coeficiente de contingencia (propuesto por Karl Pearson) se obtiene como:
+
+\begin{equation}
+C = \sqrt{\dfrac{X^2}{X^2 + n}}
+(\#eq:CoefCont)
+\end{equation}
+
+donde $X^2$ está dador por la fórmula \@ref(eq:statchisq) y $n$ es el gran total, como se definió en la fórmula \@ref(eq:frec-esp).  El siguiente código **R** muestra el cálculo manual de este coeficiente y el cálculo automático desde el comando `vcd::assocstats`.
+
+```{r}
+# Calculo manula del Coef. de Contingencia ----
+d <- xtabs(n ~ fibra + hinchazon, data = datFibra)   # Tabla de contingencia
+r <- chisq.test(d, correct = F)    # Se ejecuta la Prueba Chi-cuadrado
+n <- sum(d)                        # Se extrae el gran total
+x2 <- as.numeric(r$stat)           # Se extrae el X^2
+sqrt( x2 / (x2 + n))               # Coef. de Contingencia
+
+# Calculo automatico con assocstats ----
+library(vcd)
+assocstats(d)$cont                 # Coef. de Contingencia
+```
+
+El coeficiente de contingencia $C$ se encuentra en el intervalo $0 \leq C \leq \sqrt{(k-1) / k}$ donde:
+
+\begin{equation}
+k = \text{min}(r,c)
+(\#eq:k)
+\end{equation}
+
+es decir, donde $k$ es el mínimo entre el número de filas ($r$) y el número de columnas ($c$). Una forma de corregir el coef. de contingencia para que quede independiente de las dimensiones de la tabla ($r$, $c$) es como:
+
+\begin{equation}
+C_{corr} = C \times \sqrt{\dfrac{k}{k-1}}
+(\#eq:Ccorr)
+\end{equation}
+
+donde $C$ el coef. de contingencia original y $k$ es el mínimo entre el número de filas y el número de columnas de la tabla de contingencia \@ref(eq:k). El siguiente código **R** muestra el cálculo de esta corrección usando los objetos creados en el bloque de código anterior.
+
+```{r}
+k <- min(dim(d))               # se obtiene k
+C <- sqrt( x2 / (x2 + n))      # se guarda C = Coef. de contingencia (sin correccion)
+Ccorr <- C * sqrt(k / (k+1))   # se guarda Coef. de Contingencia Corregido
+data.frame(C, Ccorr)           # Se imprimen los dos
+```
+
+Así, el coef. de contingencia corregido ($C_{corr}$) se encuentra entre 0 y 1. Un valor cercano a 0 indica no asociación o independencia, mientras que un valor cercano a 1 indica fuerte asociación o dependencia entre las variables implicadas en la tabla.
+
+
+<br>
+
+
+#### **Coeficiente V de Cramer** {#cramer}
+
+Este coeficiente se obtiene como:
+
+\begin{equation}
+V = \sqrt{\dfrac{X^2}{n  (k -1)}}
+(\#eq:cramer)
+\end{equation}
+
+donde $X^2$ es el estadístico de prueba Chi-cuadrado, $n$ es el gran total y $k = \text{min}(r,c)$. El código **R** siguiente muestra el cálculo manual de $V$ y también su cálculo automático desde el comando `vcd:assocstats`:
+
+```{r}
+# Calculo manual de V de Cramer ----
+sqrt(x2 / (n*(k-1)) )   
+
+# Calculo automatico ----
+assocstats(d)$cramer
+```
+
+Observe en el código que los objetos `x2` `n` y `k` fueron creados en los bloques de código anteriores. 
+
+El coef. V de Cramer está entre 0 y 1. Su interpretación es la misma que para el coef. de contingencia corregido. Un valor cercano a 0 indica no asociación o independencia, mientras que un valor cercano a 1 indica fuerte asociación o dependencia entre las variables implicadas en la tabla.
+
+
+<br>
+
+
+#### **Coeficiente Phi ($\phi$)** {#phi}
+
+Este coeficiente está definido sólo para tablas de contingencia $2 \times 2$ (dos filas, dos columnas o $r = 2$ y $c = 2$), es decir para evaluar la asociación entre variables dicotómicas. Se obtiene como:
+
+\begin{equation}
+\phi = \dfrac{n_{11} \times n_{22} \  - \  n_{12} \times n_{21}}{\sqrt{n_{1\cdot} \times n_{2\cdot} \times n_{\cdot 1} \times n_{\cdot 2} }}
+(\#eq:phi)
+\end{equation}
+
+donde los $n_{ij}$, $n_{i\cdot}$ y $n_{\cdot j}$ (con $i,j = \{\ 1,\ 2\ \}$) son frecuencias absolutas observadas ya definidas [arriba](#stat-chisq). Note que  $-1 \leq \phi \leq 1$.
+
+
+Se puede demostrar que:
+
+\begin{equation}
+X^2 = n \times \phi^2
+(\#eq:relX2phi)
+\end{equation}
+
+de modo que:
+
+\begin{equation}
+|\phi| = \sqrt{\dfrac{X^2}{n}}
+(\#eq:absPhi)
+\end{equation}
+
+
+Dado que el coeficiente $\phi$ está definido para tablas $2\times 2$, para mostrar un ejemplo de su cálculo, primero entramos una nueva tabla `d` con datos ficticios de un estudio con n = 100 sujetos:
+
+```{r}
+# Se digitan datos en una matriz 2 x 2 con fuerte asociacion ----
+d1 <- matrix(
+  data = c(50-2, 2, 50-42,42), byrow = T, nrow = 2,
+  dimnames = list(consumoCafe = c("no_expuesto", "expuesto"),
+                  gastritis   = c("no", "si"))
+  ) %>% as.table()
+addmargins(d1)  # se imprime tabla de contingencia con totales marginales
+
+# Se digitan datos en una matriz 2 x 2 con fuerte asociacion ----
+d2 <- matrix(
+  data = c(50-42, 42, 50-2,2), byrow = T, nrow = 2,
+  dimnames = list(consumoCafe = c("no_expuesto", "expuesto"),
+                  gastritis   = c("no", "si"))
+  ) %>% as.table()
+addmargins(d2)  # se imprime tabla de contingencia con totales marginales
+```
+
+Ahora calculamos $\phi$ accediendo a las frec. absolutas observadas correspondientes:
+
+```{r}
+# Calculo manual de phi ----
+num   <- d1[1,1] * d1[2,2] - d1[1,2] * d1[2,1]
+tm    <- c(margin.table(d1, margin = 1), 
+           margin.table(d1, margin = 2))   # los cuatro totales marginales
+denom <- sqrt( prod(tm) )
+num / denom   # Coef. phi
+```
+
+```{r}
+# Calculo manual de phi ----
+num   <- d2[1,1] * d2[2,2] - d2[1,2] * d2[2,1]
+tm    <- c(margin.table(d2, margin = 1), 
+           margin.table(d2, margin = 2))   # los cuatro totales marginales
+denom <- sqrt( prod(tm) )
+num / denom   # Coef. phi
+```
+
+Verificamos la 2da. fórmula de manera manual:
+
+```{r}
+# Calculo de phi desde X2 ----
+r <- chisq.test(d1, correct = F)
+X2 <- as.numeric(r$stat)
+n <- sum(d1)
+sqrt(X2 / n)
+```
+
+Finalmente podemos obtener el coeficiente $\phi$ de manera automática como:
+
+```{r}
+# Obtencion automaticamente de phi ----
+assocstats(d1)$phi
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
