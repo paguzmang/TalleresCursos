@@ -12,4 +12,6 @@
 
 - **Sesión 4**. [Introducción a Shiny](Taller_Shiny_abr_2022/IntroShiny.html)
 
+- **Sesión 5**. [Regresión logística con R](Taller_DatosCateg_mar_2022/RegLogistica.html)
+
 
