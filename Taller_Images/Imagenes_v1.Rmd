@@ -1,0 +1,169 @@
+---
+title: "Manipulación de Imagenes con R"
+subtitle: "Parte 1:<br>**Paquete magick**"
+author: "Pablo Andrés Guzmán<br>Taller R y Rmarkdown"
+date: "Mayo 2022"
+output: 
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    number_sections: false
+    css: style_font_size.css
+    #code_folding: show
+    #df_print: kable
+csl: apa.csl
+#csl: http://www.zotero.org/styles/harvard1
+bibliography: /Users/pabloandres/Documents/Dropbox/Curso/mibase.bib
+link-citations: no
+---
+
+```{css, echo = F}
+.badCode {
+background-color: LIGHTGOLDENRODYELLOW;
+}
+/* dos columnas */
+.column-left{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+.column-right{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all !important;
+  word-wrap: initial !important;
+}
+```
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+library(checkdown)
+library(details)
+library(wakefield)
+library(randomNames)
+library(kableExtra)
+#library(learnr)
+opts_chunk$set(echo = TRUE, comment = NULL, warning = F, 
+               message = F, fig.align = 'center', class.output="badCode",
+               fig.width = 3.4, fig.height = 3)
+```
+
+```{r colFmt, include = F}
+# Funcion para colorear texto a discrecion en Rmarkdown
+# tomada de: https://stackoverflow.com/questions/29067541/how-to-change-the-font-color
+colFmt = function(x,color){
+  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste("\\textcolor{",color,"}{",x,"}",sep="")
+  else if(outputFormat == 'html')
+    paste("<font color='",color,"'>",x,"</font>",sep="")
+  else
+    x
+}
+colpkg <- function(x) colFmt(x = x, color = "goldenrod")
+```
+
+
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy(position = "right")
+```
+
+```{r, echo = F, eval = F}
+rintimg::img_intensify(target = ".png")  # para hacer zoom en imagenes
+# Nota: el problema con esto es que tambien incluye la imagen del icono
+# que pone el paquete klippy en la esquina superior de los chunk's de codigo
+# entonces cuando se hace clic en este icono para copiar el codigo
+# se agranda la imagen del codigo y esto es molesto.
+```
+
+
+***
+Imagenes
+
+***
+
+## Librerías
+
+```{r}
+library(magick)
+```
+
+
+## Lectura y escritura de imagenes
+
+### Lectura
+
+En la carpeta `images` se encuentran las imagenes que se desea trabajar:
+
+```{r}
+dir("images")
+```
+
+Usamos el comando `image_read` para importar las imagenes:
+
+```{r}
+img1 <- image_read("images/meme_work.jpeg" )
+img2 <- image_read("images/bebe_alcohol.JPG" )
+```
+
+Al imprimir el objeto en consola, se imprime por defecto la imagen en el Viewer de Rstudio.
+
+```{r, fig.show='hold'}
+img1
+img2
+```
+
+El comando `image_info` imprime un `tibble` con atributos de la imagen tales como el ancho, alto, etc.
+
+```{r}
+image_info(img1)
+image_info(img2)
+```
+
+Podemos guardar el tibble y usar algunas de sus columnas para realizar cálculos. Por ejemplo:
+
+```{r}
+info1 <- image_info(img1)
+info1$filesize / 1024   # para pasar de bytes a kilobytes
+```
+
+Para convertir el tamaño del archivo (`filesize`) que está en bytes a kilobytes, se debe divier por 1024. La `density` podrían ser los dpi.
+
+
+### Escritura o exportación
+
+```{r}
+# Render jpg to pdf y a png
+# file.remove("images/out")
+dir.create(path = "images/out")
+image_write(img1, path = "images/out/meme_work.pdf", format = "pdf")
+image_write(img2, path = "images/out/bebe_alcohol.png", format = "png")
+```
+
+## Resize
+
+El comando `image_scale` permite cambiar el tamaño de una imagen desde diferentes opciones con el argumento `geometry`. Por ejemplo, suponga que usted quiere disminuir el tamaño, reduciendo el ancho a un 40% y manteniendo la relación de aspecto:
+
+```{r}
+# Re-escalando a un 40% del ancho:
+image_info(img1)
+image_scale(img1, geometry = "40%")
+```
+
+
+
+
+
+
+
+
+

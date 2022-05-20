@@ -1,0 +1,440 @@
+---
+title: "Creando la tabla 1 en R con el paquete `tableone`"
+#subtitle: "Parte 1:<br>**Paquete magick**"
+author: "Pablo Andrés Guzmán<br>Taller R y Rmarkdown"
+date: "Mayo 2022"
+output: 
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    number_sections: false
+    css: style_font_size.css
+    #code_folding: show
+    #df_print: kable
+csl: apa.csl
+#csl: http://www.zotero.org/styles/harvard1
+bibliography: /Users/pabloandres/Documents/Dropbox/Curso/mibase.bib
+link-citations: no
+---
+
+```{css, echo = F}
+.badCode {
+background-color: LIGHTGOLDENRODYELLOW;
+}
+/* dos columnas */
+.column-left{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+.column-right{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all !important;
+  word-wrap: initial !important;
+}
+```
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+library(checkdown)
+library(details)
+library(wakefield)
+library(randomNames)
+library(kableExtra)
+#library(learnr)
+opts_chunk$set(echo = TRUE, comment = NULL, warning = F, 
+               message = F, fig.align = 'center', class.output="badCode",
+               fig.width = 3.4, fig.height = 3)
+```
+
+```{r colFmt, include = F}
+# Funcion para colorear texto a discrecion en Rmarkdown
+# tomada de: https://stackoverflow.com/questions/29067541/how-to-change-the-font-color
+colFmt = function(x,color){
+  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste("\\textcolor{",color,"}{",x,"}",sep="")
+  else if(outputFormat == 'html')
+    paste("<font color='",color,"'>",x,"</font>",sep="")
+  else
+    x
+}
+colpkg <- function(x) colFmt(x = x, color = "goldenrod")
+```
+
+
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy(position = "right")
+```
+
+```{r, echo = F, eval = F}
+rintimg::img_intensify(target = ".png")  # para hacer zoom en imagenes
+# Nota: el problema con esto es que tambien incluye la imagen del icono
+# que pone el paquete klippy en la esquina superior de los chunk's de codigo
+# entonces cuando se hace clic en este icono para copiar el codigo
+# se agranda la imagen del codigo y esto es molesto.
+```
+
+
+***
+La _tabla 1_ es una tabla que presenta estadística descriptiva de las variables principales en un estudio en artículos científicos, sobre todo de revistas biomédicas y usualmente es la primera tabla del artículo puesto que presenta información en la línea base del estudio. Algunos paquetes para **R** están dedicados o tienen comandos para construir esta _tabla 1_. En esta sesión usaremos el paquete `tableone` para crear una tabla como esta.
+
+***
+
+## Librerías
+
+```{r}
+library(tableone)
+library(tidyverse)
+```
+
+Consulte la viñeta del paquete `tableone` [aquí](https://cran.r-project.org/web/packages/tableone/vignettes/introduction.html){target="Blank1"}.
+
+<br>
+
+## Datos
+
+### Datos simulados
+
+Descargue un archivo con datos simulados [aquí](datos/dats_6var.csv), e importe los datos con el siguiente código:
+
+```{r, include=F, eval = F}
+# Simulacion de datos
+library(fabricatr)
+set.seed(1852)
+dat <- fabricate(
+  N = 200,
+  V1 = round(rnorm(N, mean = 40, sd = 10)),
+  V2 = round(rnorm(N, 0.5 + 0.7*V1, sd = 8)),
+  V3.logit = -20 + 0.6*V2 ,
+  V3 = draw_binary(N = N, link = "logit", latent  = V3.logit),
+  V4 = draw_categorical(prob = c(0.2, 0.6, 0.2), N = N, category_labels = c("A", "B", "C")),
+  V5 = draw_categorical(prob = c(0.1, 0.4, 0.25, 0.25), N = N,
+                        category_labels = c("Z1", "Z2", "Z3", "Z4")),
+  V6 = round(rnorm(N, mean = 100, sd = 20))
+) %>% select(-V3.logit, -ID)
+
+# Se agregan valores atipicos:
+dat[sample(1:200,23), "V2"] <- NA
+dat[sample(1:200,14), "V4"] <- NA
+
+# Se exportan los datos
+write_csv(x = dat, file = "datos/dats_6var.csv", na = "")
+#head(dat)
+#xtabs(~ V3 + V5, data = dat)
+#plot(dat[, c(2:5)], gap = 0)
+```
+
+```{r, echo = F}
+# Lectura de datos
+dat <- read.csv(file = "datos/dats_6var.csv", na.strings = "")
+```
+
+
+```{r, eval = F}
+dat <- read.csv(file = "dats_6var.csv", na.strings = "")
+str(dat)
+```
+
+```{r, echo = F}
+str(dat)
+```
+
+<br>
+
+### Peso al nacimiento
+
+Usaremos los datos del peso al nacimiento que tiene el paquete MASS. Cargue estos datos de la siguiente forma:
+
+```{r}
+bw <- MASS::birthwt  # se crea una copia de los datos
+str(bw)
+```
+
+Consulte la ayuda de la tabla escribiendo en consola: `?MASS::birthwt`
+
+<br>
+
+## Uso básico de `tableone`
+
+El comando `CreateTableOne` es el caballo de batalla del paquete `tableone`. Este comando crea la clásica _tabla 1_ con estadísticos de resumen para cada tipo de variable.
+
+El uso más simple es cuando utilizamos el argumento `data` para poner el data.frame con los datos. Aquí un ejemplo:
+
+```{r}
+# Usando CreateTableOne:
+CreateTableOne(data = dat)
+```
+
+Observe que el comando reconoce entre variables de texto (categóricas) y variables numéricas, y hace un resumen adecuado para cada tipo. Encuentre más sobre el tipo de variables en las siguientes secciones.
+
+<br>
+
+### Seleccionando variables
+
+También podemos controlar cuales variables (y en que orden) serán analizadas:
+
+```{r}
+# Seleccionando las variables que seran analizadas 
+CreateTableOne(data = dat, vars = c("V4", "V2", "V1"))
+```
+
+<br>
+
+### Tipos de variables
+
+Es frecuente que las variables categóricas sean codificadas con números enteros. Para el caso la tabla `dat`, la variables `V3` es un ejemplo de esto. Para declarar estas variables como categóricas al comando `CreateTableOne` hacemos lo siguiente:
+
+```{r}
+# Declarando variables tipo "factor" o "categoricas"
+CreateTableOne(data = dat, factorVars = c("V3"))
+```
+
+También puede convertir a factor las variables deseadas usted mismo y en ese caso no tendrá que usar el argumento `factorVars`.
+
+<br>
+
+### Método `print`
+
+Los objetos creados con el comando `createTableOne` pueden ser pasados por el comando `print` para controlar varios aspectos en la impresión de la tabla. Se recomienda revisar la ayuda para consultar todas las opciones (`?tableone::print.TableOne`).
+
+Por ejemplo, para las variables dicotómicas, por defecto sólo se muestra la frecuencia del 2do. nivel o categoría, sin embargo, se pueden habilitar los dos niveles pasando la impresión de la tabla por el comando `print`:
+
+```{r}
+# Declarando variables tipo "factor" o "categoricas"
+CreateTableOne(data = dat, factorVars = c("V3")) %>%
+  print(showAllLevels = T, contDigits = 3, catDigits = 2, missing = T,
+        formatOptions = list(decimal.mark = ","))
+```
+
+<br>
+
+En el último ejemplo también controlamos con el método `print` la cantidad de decimales, el separador decimal y si se presentan porcentajes de valores perdidos por variable. Por ejemplo, la variable V4 tiene un 7% de valores perdidos:
+
+```{r}
+sum(is.na(dat$V4))        # cantidad de valores perdidos en V4
+mean(is.na(dat$V4))*100   # pct de valores perdidos en V4
+```
+
+<br>
+
+:::: {.orangebox data-latex=""}
+
+**Ejercicio:** Utilice los datos del peso al nacimiento (`bw`) y los comandos `CreateTableOne` y `print` para reproducir la siguiente tabla:
+
+```{r, echo = F}
+CreateTableOne(
+  data = bw, 
+  vars = c("age", "ftv", "bwt", "race", "smoke", "low"),
+  factorVars = c("race", "smoke", "low")) %>%
+  print(showAllLevels = TRUE, formatOptions = list(big.mark = ","))
+```
+
+<br>
+
+```{r, echo = F}
+r <- 'CreateTableOne(
+  data = bw, 
+  vars = c("age", "ftv", "bwt", "race", "smoke", "low"),
+  factorVars = c("race", "smoke", "low")) %>%
+  print(showAllLevels = TRUE, formatOptions = list(big.mark = ","))'
+details::details(r, summary = "**Código solución**")
+```
+
+::::
+
+<br>
+
+### Modo `summary` 
+
+El comando `summary` recibe el objeto de `CreateTableOne` e imprime un resultado con más estadísticos:
+
+```{r}
+CreateTableOne(data = dat) %>%
+  summary()
+```
+
+<br>
+
+### Variables no normales
+
+El argumento `nonnormal` del comando `print` permite identificar aquellas variables para las cuales se quiere resumir usando los tres cuartiles. Observe el siguiente código:
+
+```{r}
+CreateTableOne(
+  data = dat, vars = c("V1", "V2", "V6", "V3"), factorVars = "V3") %>%
+  print(showAllLevels = TRUE, nonnormal = c("V2", "V6" ), missing = T )
+```
+
+
+<br>
+
+:::: {.orangebox data-latex=""}
+
+**Ejercicio:** Utilice los datos del peso al nacimiento (`bw`) y los comandos `CreateTableOne` y `print` para reproducir la siguiente tabla:
+
+```{r, echo = F}
+CreateTableOne(
+  data = bw, 
+  vars = c("age", "ftv", "bwt", "race"),
+  factorVars = c("race", "smoke", "low")) %>%
+  print(showAllLevels = TRUE, nonnormal = c("age","ftv"),
+        formatOptions = list(big.mark = ","))
+```
+
+<br>
+
+```{r, echo = F}
+r <- 'CreateTableOne(
+  data = bw, 
+  vars = c("age", "ftv", "bwt", "race"),
+  factorVars = "race") %>%
+  print(showAllLevels = TRUE, nonnormal = c("age","ftv"),
+        formatOptions = list(big.mark = ","))'
+details::details(r, summary = "**Código solución**")
+```
+
+::::
+
+<br>
+
+## Resumen por grupo (`strata`)
+
+El argumento `strata` dentro de `CreateTableOne` permite específicar variables que formarían grupos. De usarse, todos los cálculos se realizan por grupo.
+
+```{r}
+CreateTableOne(
+  data = dat,
+  vars = c("V1", "V2", "V3"),
+  strata = "V4",
+  factorVars = "V3"
+) %>%
+  print(showAllLevels = T)
+```
+
+<br>
+
+:::: {.orangebox data-latex=""}
+
+**Ejercicio:** Utilice los datos del peso al nacimiento (`bw`) y los comandos `CreateTableOne` y `print` para reproducir la siguiente tabla:
+
+```{r, echo = F}
+CreateTableOne(
+  data = bw, 
+  vars = c("age", "bwt",  "low"),
+  factorVars = c("smoke", "low"),
+  strata = "smoke") %>%
+  print(showAllLevels = TRUE, 
+        formatOptions = list(big.mark = ","))
+```
+
+<br>
+
+```{r, echo = F}
+r <- 'CreateTableOne(
+  data = bw, 
+  vars = c("age", "bwt",  "low"),
+  factorVars = c("smoke", "low"),
+  strata = "smoke") %>%
+  print(showAllLevels = TRUE,
+        formatOptions = list(big.mark = ","))'
+details::details(r, summary = "**Código solución**")
+```
+
+::::
+
+<br>
+
+## Exportando la tabla
+
+El autor del paquete `tableone` propone exportar la tabla a un archivo plano, p.e. un csv, para que sea cargada a Excel, poder editarse en ese programa para luego llevarla a Word. La exportación de la tabla a un archivo csv se puede facilitar con el comando `print`.
+
+```{r}
+# Se crea y se guarda la tabla
+tab <- CreateTableOne(
+  data = bw, 
+  vars = c("age", "bwt",  "low"),
+  factorVars = c("smoke", "low"),
+  strata = "smoke")
+
+# Se imprime y se guarda
+tab_imp <- print(tab, showAllLevels = TRUE, quote = TRUE, noSpaces = TRUE )
+
+# Se exporta como un archivo csv:
+write.csv(tab_imp, file = "tab_imp.csv", quote = F)
+```
+
+<br>
+
+El archivo `tab_imp.csv` se puede pegar en Excel y utilizar la opción de **Texto a columnas** de Excel para separar las columnas de acuerdo a una "coma" y continuar su edición en Excel.
+
+<br>
+
+## Otros paquetes y comandos similares
+
+Además de **tableone**, otros paquetes tienen comandos enfocados a producir resultados de estadística descriptiva de forma _masiva_ para todas las columnas de una tabla con más o menos opciones de personalización. Aquí una lista de ellos.
+
+
+
+```{r, echo = F}
+library(knitr)
+library(kableExtra)
+arma.link <- function(link){
+  paste0("[Aquí](", link, ")")
+}
+
+# Links
+link.summarytools <- "https://cran.r-project.org/web/packages/summarytools/vignettes/introduction.html"
+link.skimr <- "https://cran.r-project.org/web/packages/skimr/vignettes/skimr.html"
+link.table1 <- "https://cran.r-project.org/web/packages/table1/vignettes/table1-examples.html"
+link.furniture <- "http://cran.nexr.com/web/packages/furniture/vignettes/Table1.html"
+link.psych <- "https://cran.r-project.org/web/packages/psych/vignettes/intro.pdf"
+link.arsenal <- "https://cran.r-project.org/web/packages/arsenal/vignettes/tableby.html"
+link.cg <- "https://cran.r-project.org/web/packages/compareGroups/vignettes/compareGroups_vignette.html"
+
+# Tabla:
+tibble(
+  Paquete = c("skimr", "summarytools", "table1", "furniture", "Hmisc",
+              "psych", "arsenal", "compareGroups"),
+  Comandos = c("skimr", "freq; ctable; descr; etc.", "table1", "table1", "describe",
+               "describe; describeBy", "tableby", "compareGroups"),
+  Viñeta = c(arma.link(link.skimr), arma.link(link.summarytools),
+             arma.link(link.table1), arma.link(link.furniture), "", 
+             arma.link(link.psych), arma.link(link.arsenal),
+             arma.link(link.cg))
+) %>%
+  kable(escape = F) %>%
+  kable_styling(full_width = F)
+```
+
+<br>
+
+Finalmente, algunos blogs en internet realizan comparaciones de este tipo de paquetes:
+
+- [How to Easily Create Descriptive Summary Statistics Tables in R Studio – By Group](https://thatdatatho.com/easily-create-descriptive-summary-statistic-tables-r-studio/)
+
+- [My favourite R package for: summarising data](https://dabblingwithdata.wordpress.com/2018/01/02/my-favourite-r-package-for-summarising-data/)
+
+- [R packages for summarising data – part 2](https://dabblingwithdata.wordpress.com/2018/02/26/r-packages-for-summarising-data-part-2/)
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
+
+
+

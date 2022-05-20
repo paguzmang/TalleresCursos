@@ -14,4 +14,6 @@
 
 - **Sesión 5**. [Regresión logística con R](Taller_DatosCateg_mar_2022/RegLogistica.html)
 
+- **Sesión 6**. [Generando la Tabla 1](Taller_Tabla1/Taller_Tabla1.html)
+
 
