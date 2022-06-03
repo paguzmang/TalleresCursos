@@ -1,0 +1,15 @@
+/* Whole document: */
+  body{
+    font-family: Helvetica;
+    font-size: 12pt;
+  }
+  code.r{
+  font-size: 10pt;
+}
+.orangebox {
+  padding: 1em;
+  background: transparent;
+  color: black;
+  border: 2px solid orange;
+  border-radius: 10px;
+}

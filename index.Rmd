@@ -16,4 +16,6 @@
 
 - **Sesión 6**. [Generando la Tabla 1](Taller_Tabla1/Taller_Tabla1.html)
 
+- **Sesión 7**. [Dando formato a tablas](Taller_FormatoTablas/Taller_FormatoTablas.html)
+
 
