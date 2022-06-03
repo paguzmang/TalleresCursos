@@ -98,15 +98,39 @@ En esta sesión revisamos los paquetes `flextable` y `kableExtra` para dar forma
 library(tidyverse)
 library(flextable)    # para diseñar tablas
 library(knitr)        # para comando kable
-library(kableExtra)   # complementos obligatorios para kable
-library(webshot)      # para salvar las tablas como imagen
+library(kableExtra)   # complementos para kable
+library(officer)      # complementos para flextable
+library(magick)       # para trabajar con imagenes
 ```
+
+<br>
+
+También se requiere el paquete `r colpkg("webshot")` para salvar como imagen las tablas. Si es necesario, instale este paquete, y además, ejecute la siguiente línea de código:
+
+```{r, eval = F}
+# install.packages("webshot")   # para instalar el paquete (solo si se requiere)
+webshot::install_phantomjs()    # para instalar el software phantomjs
+```
+
+<br>
+
+Finalmente active el paquete:
+
+
+```{r}
+library(webshot)                # para salvar las tablas como imagen
+```
+
+
+<br>
+
+## Manuales de los paquetes
 
 - Consulte el manual/libro del paquete `r colpkg("flextable")` [aquí](https://ardata-fr.github.io/flextable-book/){target="Blank1"}.
 
 - Consulte el manual del paquete `r colpkg("kableExtra")` [aquí](https://haozhu233.github.io/kableExtra/){target="Blank2"}.
 
-- [Taller interactivo](http://gauss.inf.um.es:8080/tabular-tablas/#section-agrupar-filas-y-columnas){target="Blank7"} para prácticar `r colpkg("kableExtra")`.
+- [Taller interactivo](http://gauss.inf.um.es:8080/tabular-tablas/#section-objetivos){target="Blank7"} para prácticar `r colpkg("kableExtra")`.
 
 <br>
 
@@ -281,7 +305,7 @@ La tabla creada por `flextable` se puede exportar como una imagen usando el coma
 save_as_image(ft, path = "mitabla.png")
 ```
 
-Descargue el `png` producido [aquí](mitabla.png).
+Descargue el `png` producido [aquí](mitabla.png){target="Blank8"}.
 
 La imagen queda en el directorio de trabajo  actual. La tabla también se puede guardar como una imagen desde el botón de "guardar" en el **Viewer** de Rstudio.
 
@@ -416,7 +440,7 @@ El comando `save_kable` guarda la tabla como una imagen o como pdf. Se recomiend
 
 Se guarda desde un `html` y con un estilo `classic`:
 
-```{r}
+```{r, eval = F}
 kable(tab1, align = c("l", "c", "c"), format = "html") %>%
   kable_classic(full_width = F) %>%
   add_header_above(header = c(" " = 1, "Época<sup>1</sup>" = 2), escape = F) %>%
@@ -431,7 +455,7 @@ Descargue el `pdf` producido [aquí](mitabla_classic.pdf){target="Blank4"}.
 
 Se guarda desde un `html` y con un estilo `classic`:
 
-```{r}
+```{r, eval = F}
 kable(tab1, align = c("l", "c", "c"), format = "html") %>%
   kable_classic_2(full_width = F) %>%
   add_header_above(header = c(" " = 1, "Época<sup>1</sup>" = 2), escape = F) %>%
@@ -446,7 +470,7 @@ Descargue el `pdf` producido [aquí](mitabla_classic2.pdf){target="Blank5"}.
 
 Se guarda desde `latex` y con la opción `booktabs = T`:
 
-```{r}
+```{r, eval = F}
 kable(tab1, align = c("l", "c", "c"), format = "latex", booktabs = T) %>%
   kable_styling(full_width = F) %>%
   add_header_above(header = c(" " = 1, "Época$^1$" = 2), escape = F) %>%
