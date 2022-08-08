@@ -6,16 +6,18 @@
 
 - **Sesión 1**. Introducción a Shiny
 
-- **Sesión 2**. Manejo de datos categóricos en **R**. Parte 1: [Formatos de organización y generación de tablas de contingencia](Taller_DatosCateg_mar_2022/FormatosDatosCateg.html)
+- **Sesión 2**. Manejo de datos categóricos en **R**. Parte 1: [Formatos de organización y generación de tablas de contingencia](Taller_DatosCateg_mar_2022/FormatosDatosCateg.html){target="Blank1"}
 
-- **Sesión 3**. Manejo de datos categóricos en **R**. Parte 2: [Manipulando los niveles de un factor con el paquete `forcats`](Taller_DatosCateg_mar_2022/FormatosDatosCateg2.html)
+- **Sesión 3**. Manejo de datos categóricos en **R**. Parte 2: [Manipulando los niveles de un factor con el paquete `forcats`](Taller_DatosCateg_mar_2022/FormatosDatosCateg2.html){target="Blank2"}
 
-- **Sesión 4**. [Introducción a Shiny](Taller_Shiny_abr_2022/IntroShiny.html)
+- **Sesión 4**. [Introducción a Shiny](Taller_Shiny_abr_2022/IntroShiny.html){target="Blank3"}
 
-- **Sesión 5**. [Regresión logística con R](Taller_DatosCateg_mar_2022/RegLogistica.html)
+- **Sesión 5**. [Regresión logística con R](Taller_DatosCateg_mar_2022/RegLogistica.html){target="Blank4"}
 
-- **Sesión 6**. [Generando la Tabla 1](Taller_Tabla1/Taller_Tabla1.html)
+- **Sesión 6**. [Generando la Tabla 1](Taller_Tabla1/Taller_Tabla1.html){target="Blank5"}
 
-- **Sesión 7**. [Dando formato a tablas](Taller_FormatoTablas/Taller_FormatoTablas.html)
+- **Sesión 7**. [Dando formato a tablas](Taller_FormatoTablas/Taller_FormatoTablas.html){target="Blank6"}
+
+- **Sesión 8**. [Moviendo datos entre R y Excel](Taller_R_Excel/Taller_R_Excel.html){target="Blank7"}
 
 

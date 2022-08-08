@@ -1,0 +1,185 @@
+---
+title: "Simul"
+author: "Pablo Andrés Guzmán<br>Taller R y Rmarkdown"
+date: "Ago 2022"
+output: 
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    number_sections: false
+    css: style_font_size.css
+    #code_folding: show
+    #df_print: kable
+csl: apa.csl
+#csl: http://www.zotero.org/styles/harvard1
+bibliography: /Users/pabloandres/Documents/Dropbox/Curso/mibase.bib
+link-citations: no
+---
+
+```{css, echo = F}
+.badCode {
+background-color: LIGHTGOLDENRODYELLOW;
+}
+/* dos columnas */
+.column-left{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+.column-right{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all !important;
+  word-wrap: initial !important;
+}
+```
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+library(checkdown)
+library(details)
+library(wakefield)
+library(randomNames)
+library(kableExtra)
+#library(learnr)
+opts_chunk$set(echo = TRUE, comment = NULL, warning = F, 
+               message = F, fig.align = 'center', class.output="badCode",
+               fig.width = 3.4, fig.height = 3)
+```
+
+```{r colFmt, include = F}
+# Funcion para colorear texto a discrecion en Rmarkdown
+# tomada de: https://stackoverflow.com/questions/29067541/how-to-change-the-font-color
+colFmt = function(x,color){
+  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste("\\textcolor{",color,"}{",x,"}",sep="")
+  else if(outputFormat == 'html')
+    paste("<font color='",color,"'>",x,"</font>",sep="")
+  else
+    x
+}
+colpkg <- function(x) colFmt(x = x, color = "goldenrod")
+```
+
+
+```{r klippy, echo=FALSE, include=TRUE}
+# install.packages("remotes")
+# remotes::install_github("rlesur/klippy")
+klippy::klippy(position = "right")
+```
+
+```{r, echo = F, eval = F}
+rintimg::img_intensify(target = ".png")  # para hacer zoom en imagenes
+# Nota: el problema con esto es que tambien incluye la imagen del icono
+# que pone el paquete klippy en la esquina superior de los chunk's de codigo
+# entonces cuando se hace clic en este icono para copiar el codigo
+# se agranda la imagen del codigo y esto es molesto.
+```
+
+
+***
+Hola mundo 
+
+***
+
+## Librerías
+
+```{r}
+library(tidyverse)
+library(openxlsx)
+```
+
+Consulte la viñeta del paquete `r colpkg("openxlsx")` [aquí](https://cran.r-project.org/web/packages/openxlsx/vignettes/Introduction.html){target="Blank1"}.
+
+<br>
+
+## Modelo Poisson
+
+La distribución Poisson tiene como función de (masa de) probabilidad:
+
+$$f(y\ ; \mu) = \dfrac{\mu^y \times e^{-\mu}}{y!} \ , \quad \text{ con } y = \{0,1,2,3,\ldots\} \quad { \text{ y } \quad \mu > 0 }  $$
+La media y varianza de una variable aleatoria Poisson es:
+
+$$ \text{E}(Y) = \mu \quad  \text{ y } \quad \text{Var}(Y) = \mu$$ 
+
+<br>
+
+## Modelo Binomial Negativo
+
+Este modelo tiene dos parametrizaciones o expresiones. Aquí presentamos aquella comunmente usada en el contexto de modelos lineales generalizados:
+
+$$f(y\,;k\,; \mu) = \dfrac{\Gamma(y+k)}{\Gamma(y+1) \times \Gamma(k)} \times \left(\dfrac{k}{\mu + k}\right)^k\times\left(1-\dfrac{k}{\mu+k}\right)^y$$
+
+con $y = \{0,1,2, \ldots\}$; $k > 0$; $\mu = \{0,1,2, \ldots\}$; y  $\Gamma(\cdot)$ es la función Gamma, la cual esta definida para enteros positivos como $\Gamma(a) = (a-1)!$. La media y varianza de una binomial negativa es:
+
+$$ \text{E}(Y) = \mu \quad  \text{ y } \quad \text{Var}(Y) = \mu + \dfrac{\mu^2}{k}$$ 
+Observe que:
+
+- Si $k \rightarrow \infty$ entonces $\dfrac{\mu^2}{k} \rightarrow 0$ y por ende $\text{Var}(Y) \rightarrow \mu$ y la Binomial Negativa  $\rightarrow$ Poisson.
+
+- Si $k \rightarrow 0$ entonces $\dfrac{\mu^2}{k} \rightarrow \infty$ y por ende $\text{Var}(Y) > \mu$. Aquí existiría **sobredispersión** y la Binomial Negativa  sería diferente a la Poisson.
+
+Note entonces que el modelo Poisson se podría considerar como un caso especial de la Binomial Negativa cuando el parámetro $k$ es muy grande relativo a $\mu^2$. 
+
+En **R** el comando `dnbinom` entrega la probabilidad para el modelo binomial negativo, y la parametrización presentada arriba coincide directamente con los argumentos `mu` (= $\mu$) y `size` (= $k$).
+
+**Ejemplo**
+
+```{r, include=F}
+fun <- function(y, mu, k, distr){
+  ifelse(distr == "Poisson", 
+    dpois(x = y, lambda = mu),
+    dnbinom(x = y, size = k, mu = mu)
+  )
+}
+
+d <- expand.grid(
+  mu = 4,
+  k  = c(1000, 10),
+  y = 0:15,
+  distr = c("Poisson", "BN")
+) %>%
+  mutate(
+    p = fun(y = y, mu = mu, k = k, distr = distr),
+    muk = paste0("mu = ", mu, "; k = ", k),
+    v = ifelse(distr == "Poisson", mu, round(mu + mu^2 / k, 3))
+  )
+
+mu <- 4
+k <- 1000
+v <- mu + mu^2 / k
+```
+
+Considere una v.a $y$ Binomial Negativa con $\text{E}(Y) = \mu = `r mu`$ y el parámetro $k$ de sobredispersión igual a $k = `r k`$, de tal forma que $\text{Var}(Y) = `r mu` + \dfrac{`r mu^2`}{`r k`} = `r v`$. Observe que la varianza es practicamente la misma varianza que tendría una Poisson. 
+
+```{r, echo = F, fig.width=7, fig.height=2.8}
+ggplot(d, aes(x = y, y = p, fill = distr)) + 
+  geom_col(position = position_dodge(), width = 0.7) +
+  facet_grid(~ muk) + ylab("P(Y = y) = f(y)")
+```
+
+
+
+
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
+
+
+

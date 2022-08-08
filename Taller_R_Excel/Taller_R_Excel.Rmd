@@ -1,0 +1,435 @@
+---
+title: "Moviendo datos entre R y Excel con el paquete `openxlsx`"
+author: "Pablo Andrés Guzmán<br>Taller R y Rmarkdown"
+date: "Ago 2022"
+output: 
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    number_sections: false
+    css: style_font_size.css
+    #code_folding: show
+    #df_print: kable
+csl: apa.csl
+#csl: http://www.zotero.org/styles/harvard1
+bibliography: /Users/pabloandres/Documents/Dropbox/Curso/mibase.bib
+link-citations: no
+---
+
+```{css, echo = F}
+.badCode {
+background-color: LIGHTGOLDENRODYELLOW;
+}
+/* dos columnas */
+.column-left{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+.column-right{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all !important;
+  word-wrap: initial !important;
+}
+```
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+library(checkdown)
+library(details)
+library(wakefield)
+library(randomNames)
+library(kableExtra)
+#library(learnr)
+opts_chunk$set(echo = TRUE, comment = NULL, warning = F, 
+               message = F, fig.align = 'center', class.output="badCode",
+               fig.width = 3.4, fig.height = 3)
+```
+
+```{r colFmt, include = F}
+# Funcion para colorear texto a discrecion en Rmarkdown
+# tomada de: https://stackoverflow.com/questions/29067541/how-to-change-the-font-color
+colFmt = function(x,color){
+  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste("\\textcolor{",color,"}{",x,"}",sep="")
+  else if(outputFormat == 'html')
+    paste("<font color='",color,"'>",x,"</font>",sep="")
+  else
+    x
+}
+colpkg <- function(x) colFmt(x = x, color = "goldenrod")
+```
+
+
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy(position = "right")
+```
+
+```{r, echo = F, eval = F}
+rintimg::img_intensify(target = ".png")  # para hacer zoom en imagenes
+# Nota: el problema con esto es que tambien incluye la imagen del icono
+# que pone el paquete klippy en la esquina superior de los chunk's de codigo
+# entonces cuando se hace clic en este icono para copiar el codigo
+# se agranda la imagen del codigo y esto es molesto.
+```
+
+
+***
+Con frecuencia tenemos la necesidad de importar datos a **R** directamente desde **Excel** o sacar tablas de datos desde **R** hacia una o varias hojas de un libro de Excel. En esta sesión revisaremos como hacer este tipo de operaciones con el paquete `r colpkg("openxlsx")`. 
+
+***
+
+## Librerías
+
+```{r}
+library(tidyverse)
+library(openxlsx)
+```
+
+Consulte la viñeta del paquete `r colpkg("openxlsx")` [aquí](https://cran.r-project.org/web/packages/openxlsx/vignettes/Introduction.html){target="Blank1"}.
+
+
+```{r simul, include=F, eval = F}
+# Simul de una serie de tiempo para una variable parabolica
+# con vertice en la mitad del ano
+b <- 3
+dA <- 20
+dB <- 30
+mesv <- 6   # mes del vertice
+a <- -b / (2*mesv)
+curve(a*x^2 + b*x + dA, from = 1, to = 12, ylim = c(18, 41))
+curve(a*x^2 + b*x + dB, from = 1, to = 12, add = T)
+
+set.seed(108)
+dat <- tibble(
+  mes_num = rep(1:12, 2),
+  mes_tex = rep(month.abb, 2),
+  zona = rep(c("A","B"), each = 12),
+  biomasa = round(a*mes_num^2 + b*mes_num + dA + (dB-dA)*(zona == "B") + 
+    rnorm(n = 12*2, mean = 0, sd = 24*0.12), 2)
+  )
+
+# Hola
+ggplot(dat, aes(x = mes_num, y = biomasa, group = zona, color = zona)) +
+  geom_point() + geom_smooth() +
+  scale_x_continuous(breaks = 1:12, labels = month.abb) +
+  xlab("Mes")
+
+#dat1 <- dat
+# write.xlsx(x = dat, file = 'datos/biomasaMeses.xlsx')
+write.xlsx(x = list(zonaA = dat %>% filter(zona == "A") %>% select(-zona),
+                    zonaB = dat %>% filter(zona == "B") %>% select(-zona)),
+           file = 'datos/biomasaMeses.xlsx')
+```
+
+
+<br>
+
+## Desde Excel a R
+
+Descargue el archivo [`biomasaMeses.xlsx`](datos/biomasaMeses.xlsx) y revise su contenido. Observe que el archivo tiene dos hojas llamadas **zonaA** y **zonaB**.
+
+Suponga que usted quiere importar a **R** la hoja 1 (**zonaA**) del archivo. Para esto usamos el comando `read.xlsx`.
+
+```{r, include = F}
+datA <- read.xlsx("datos/biomasaMeses.xlsx")
+datB <- read.xlsx("datos/biomasaMeses.xlsx", sheet = "zonaB")
+```
+
+```{r, eval = F}
+datA <- read.xlsx("biomasaMeses.xlsx")
+str(datA)
+```
+
+```{r, eval = T, echo = F}
+str(datA)
+```
+
+<br>
+
+El comando `read.xlsx` importa por defecto la 1era. hoja y detecta de forma automática el tipo de columnas (números, texto) en el archivo de Excel.
+
+Para importar a **R** una hoja diferente a la número 1, utilice el argumento `sheet` para indicar la hoja con un número o con su nombre (entre comillas):
+
+```{r, eval = F}
+datB <- read.xlsx("biomasaMeses.xlsx", sheet = "zonaB", )
+str(datB)
+```
+
+```{r, eval = T, echo = F}
+str(datB)
+```
+
+<br>
+
+Para otros argumentos que le permiten personalizar aún más la importación revisar la ayuda del comando: `?read.xlsx`.
+
+<br>
+
+## Desde R a un libro nuevo de Excel
+
+Para exportar datos desde **R** a hojas en un **nuevo** libro de Excel, usamos el comando `write.xlsx`. Aquí presentamos dos escenarios, exportar un sólo data.frame o varios.
+
+### Exportando un solo data.frame
+
+A continuación juntamos las tablas `datA` y `datB` en un sólo data.frame y luego exportamos este nuevo data.frame a un nuevo libro de Excel:
+
+
+
+```{r, eval = T}
+# Se juntan datA y datB, pegando una abajo de la otra
+dat <- bind_rows(
+  mutate(datA, zona = "A"),
+  mutate(datB, zona = "B")
+)
+str(dat)  # se imprime la estructura
+```
+
+```{r, include=F}
+if(file.exists("datos/biomasa2.xlsx")) file.remove("datos/biomasa2.xlsx")
+# Se exporta la nueva tabla a un nuevo libro de excel
+write.xlsx(x = dat, file = "datos/biomasa2.xlsx")
+```
+
+
+```{r, eval = F}
+# Se exporta la nueva tabla a un nuevo libro de excel llamado biomasa2.xlsx
+write.xlsx(x = dat, file = "biomasa2.xlsx")
+```
+
+Ahora revise en su directorio de trabajo el nuevo archivo `biomasa2.xlsx` para verificar el proceso de exportación.
+
+<br>
+
+### Exportando varios data.frames
+
+Preparemos tres data.frame de ejemplo desde el paquete **MASS** para exportar a un nuevo libro de Excel, pero en tres hojas diferentes:
+
+```{r}
+library(MASS)   # se activa MASS (no hay que instalar)
+# (1) Datos cabbage: experimento con coles ----
+data(cabbages)  # se activan los datos
+str(cabbages)   # se revisa su estrucutra
+
+# (2) Datos genotype: experimento con ratas ----
+data(genotype)  # se activan los datos
+str(genotype)   # se revisa su estrucutra
+
+# (3) Datos bacteria: precensia de H. influenzae luego de trat ----
+data(bacteria)  # se activan los datos
+str(bacteria)   # se revisa su estrucutra
+```
+
+
+<br>
+
+Ahora usamos el comando `write.xlsx` para realizar la exportación, la clave es poner todos los data.frame en una lista:
+
+```{r, eval=T, include=F}
+if(file.exists("datos/variosDatos.xlsx")) file.remove("datos/variosDatos.xlsx")
+write.xlsx(
+  
+  # Use una lista nombrada para reunir los data.frame
+  x = list(
+    coles      = cabbages,
+    genotRatas = genotype,
+    influenza  = bacteria
+  ),
+  
+  file = "datos/variosDatos.xlsx"
+  
+)
+```
+
+```{r, eval=F, include=T}
+# Se exportan varios data.frame a un nuevo libro de excel,
+# cada data.frame en una hoja diferente con un nombre
+write.xlsx(
+  
+  # Use una lista nombrada para reunir los data.frame
+  x = list(
+    coles      = cabbages,
+    genotRatas = genotype,
+    influenza  = bacteria
+  ),
+  
+  file = "variosDatos.xlsx"
+  
+)
+```
+
+Revise en su directorio de trabajo el archivo `variosDatos.xlsx` para verificar el proceso de exportación. Observe como cada hoja quedó nombrada con las etiquetas usadas en la lista para cada data.frame.
+
+<br>
+
+
+
+## Desde R a un libro de Excel ya existente 
+
+Si queremos poner datos de **R** en un libro de Excel que ya exista, en este caso debemos decidir si poner la tabla en una hoja ya existente en el libro o poner los datos en una hoja nueva. 
+
+Para mostrar el procedimiento para ambos escenarios haga una copia del archivo `biomasaMeses.xlsx` y trabajaremos sobre la copia. El siguiente código realiza la copia:
+
+```{r, include = F}
+if(file.exists("datos/biomasaMeses2.xlsx")) file.remove("datos/biomasaMeses2.xlsx")
+file.copy(from = "datos/biomasaMeses.xlsx", 
+          to   = "datos/biomasaMeses2.xlsx")
+```
+
+```{r, include = T, eval = F}
+# Codigo para realizar una copia de un archivo en el directorio
+# de trabajo:
+file.copy(from = "biomasaMeses.xlsx", 
+          to   = "biomasaMeses2.xlsx")
+```
+
+El procedimiento es el siguiente:
+
+1. Cargue libro a **R** con el comando `loadWorkbook` a un objeto de **R**, digamos `wb`.
+
+2. Desde **R** agregue una hoja nueva  con el comando `addWorksheet` al objeto `wb`. Verifique las hojas del objeto con el comando `sheets`. Debería aparecer la nueva hoja adicionada.
+
+3. Desde **R** use el comando `writeData` para agregar el data.frame deseado a una ubicación (celda, columna) en alguna de las hojas del objeto `wb`.
+
+4. Salve el objeto `wb` con los cambios en el mismo archivo de excel del paso 1 (o en uno nuevo) con el comando `saveWorkbook`.
+
+A continuación mostramos el código **R** para realizar el procedimiento:
+
+
+```{r, eval = T, include = F}
+# Se carga un libro de excel existente
+wb <- loadWorkbook(file = "datos/biomasaMeses2.xlsx")
+wb0 <- loadWorkbook(file = "datos/biomasaMeses2.xlsx")
+
+# Se agrega una nueva hoja al libro de excel
+addWorksheet(wb, "todo")   # se adiciona una nueva hoja llamada "todo"
+
+# Se escriben datos a la nueva hoja iniciando en la columna 3 y fila 4
+writeData(wb = wb, sheet = "todo", x = dat, startCol = 3, startRow = 4)
+
+# Se exportan el objeto/libro al mismo archivo (se sobreescribe)
+saveWorkbook(wb = wb, file = "datos/biomasaMeses2.xlsx", overwrite = T)
+```
+
+```{r, eval = F, include = T}
+# Se carga un libro de excel existente
+wb <- loadWorkbook(file = "biomasaMeses2.xlsx")
+class(wb)  # revisemos la clase
+```
+
+```{r, echo = F}
+class(wb0)
+```
+
+
+```{r, eval = F}
+wb   # se imprime en consola
+```
+
+```{r, echo = F}
+wb0   # se imprime en consola
+```
+
+
+```{r, eval = F, include = T}
+# Se verifican las hojas del libro
+sheets(wb)                
+```
+
+```{r, echo = F}
+sheets(wb0)                 # se verifican las hojas del libro
+```
+
+```{r, eval = F, include = T}
+addWorksheet(wb, "todo")   # se adiciona una nueva hoja llamada "todo"
+sheets(wb)                 # se verifican las hojas del libro (de nuevo)
+```
+
+```{r, echo = F}
+sheets(wb)                 # se verifican las hojas del libro
+```
+
+```{r, eval = F, include = T}
+# Se escriben datos a la nueva hoja iniciando en la columna 3 y fila 4
+writeData(wb = wb, sheet = "todo", x = dat, startCol = 3, startRow = 4)
+
+# Se exportan el objeto/libro al mismo archivo (se sobreescribe)
+saveWorkbook(wb = wb, file = "biomasaMeses2.xlsx", overwrite = T)
+```
+
+Revise en su directorio de trabajo el archivo `biomasaMeses2.xlsx` para verificar el proceso de exportación. Observe que tenemos una nueva hoja llamada `todo` con la nueva tabla, además la tabla inicia en la celda C4 (columna 3, fila 4). El coomando `writeData` permite controlar otros rasgos de formato al momento de poner los datos en la hoja de excel tales como bordes, colores, etc. 
+
+<br>
+
+## Resumen de comandos
+
+```{r, echo = F}
+tibble(
+ Comando = c("`read.xlsx`", "`write.xlsx`", "`loadWorkbook`", 
+             "`saveWorkbook`", "`addWorksheet`", "`sheets`", "`writeData`" ),
+ Descripción = c("Importa datos desde una hoja de un libro de Excel",
+                 "Exporta uno o varios data.frame a un libro de Excel nuevo",
+                 "Carga un archivo de Excel a un objeto de clase 'workbook'",
+                 "Salva un objeto de clase 'workbook' a un archivo de Excel",
+                 "Adiciona una nueva hoja a un objeto de clase 'workbook'",
+                 "Imprime los nombre de las hojas de un objeto de clase 'workbook'",
+                 "Escribe datos de R en un objeto de clase 'workbook'")
+) %>%
+  kable() %>%
+  kable_styling(full_width  = F) %>%
+  column_spec(2, width = "35em")
+```
+
+
+<br>
+
+## Ejercicios
+
+Use el archivo de excel [`variosDatos.xlsx`](datos/variosDatos.xlsx) que creamos atrás con tres hojas para realizar lo siguiente con código **R** y los comandos del paquete `r colpkg("openxlsx")`:
+
+1. Cree un objeto de clase 'workbook' a partir del archivo `variosDatos.xlsx`.
+
+2. Adicione una nueva hoja al objeto y escriba en esta hoja el data.frame `iris` (no requiere activar los datos o librerías) que viene de ejemplo en **R**.
+
+3. Sobreescriba el archivo `variosDatos.xlsx` desde el objeto 'workbook' con la nueva hoja. Verifique que el archivo ahora contenga la nueva hoja.
+
+:::: {.orangebox data-latex=""}
+
+```{r, echo = F}
+# wb <- loadWorkbook(file = "datos/variosDatos.xlsx")
+# sheets(wb)
+# addWorksheet(wb, sheetName = "iris")
+# writeData(wb, sheet = "iris", x = iris)
+# saveWorkbook(wb, file = "datos/variosDatos.xlsx", overwrite = T)
+
+r <- 'wb <- loadWorkbook(file = "variosDatos.xlsx")
+sheets(wb)
+addWorksheet(wb, sheetName = "iris")
+writeData(wb, sheet = "iris", x = iris)
+saveWorkbook(wb, file = "variosDatos.xlsx", overwrite = T)'
+details::details(r, summary = "**Código solución**")
+```
+
+
+::::
+
+<br>
+<br>
+<br>
+<br>
+
+
+
+
+
