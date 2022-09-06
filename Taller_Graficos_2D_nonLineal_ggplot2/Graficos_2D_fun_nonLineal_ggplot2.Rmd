@@ -1,0 +1,408 @@
+---
+title: "Gráficos 2D de funciones no lineales en varias variables"
+author: "Pablo Andrés Guzmán<br>Taller R y Rmarkdown"
+date: "Ago 2022"
+output: 
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    number_sections: false
+    css: style_font_size.css
+    #code_folding: show
+    #df_print: kable
+csl: apa.csl
+#csl: http://www.zotero.org/styles/harvard1
+bibliography: /Users/pabloandres/Documents/Dropbox/Curso/mibase.bib
+link-citations: yes
+---
+
+```{css, echo = F}
+.badCode {
+background-color: LIGHTGOLDENRODYELLOW;
+}
+/* dos columnas */
+.column-left{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+.column-right{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all !important;
+  word-wrap: initial !important;
+}
+```
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+library(checkdown)
+library(details)
+library(wakefield)
+library(randomNames)
+library(kableExtra)
+#library(learnr)
+opts_chunk$set(echo = TRUE, comment = NULL, warning = F, 
+               message = F, fig.align = 'center', class.output="badCode",
+               fig.width = 3.4, fig.height = 3)
+```
+
+```{r colFmt, include = F}
+# Funcion para colorear texto a discrecion en Rmarkdown
+# tomada de: https://stackoverflow.com/questions/29067541/how-to-change-the-font-color
+colFmt = function(x,color){
+  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste("\\textcolor{",color,"}{",x,"}",sep="")
+  else if(outputFormat == 'html')
+    paste("<font color='",color,"'>",x,"</font>",sep="")
+  else
+    x
+}
+colpkg <- function(x) colFmt(x = x, color = "goldenrod")
+```
+
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy(position = "right")
+```
+
+```{r, echo = F, eval = F}
+rintimg::img_intensify(target = ".png")  # para hacer zoom en imagenes
+# Nota: el problema con esto es que tambien incluye la imagen del icono
+# que pone el paquete klippy en la esquina superior de los chunk's de codigo
+# entonces cuando se hace clic en este icono para copiar el codigo
+# se agranda la imagen del codigo y esto es molesto.
+```
+
+------------------------------------------------------------------------
+
+Diversas funciones matemáticas no lineales son útiles para describir o representar fenónomes en ciencias biológicas y afines. En esta sesión revisaremos código **R** con el paquete `r colpkg("ggplot2")` para gráficar funciones con una o más variables predictoras y con múltiples parámetros.
+
+------------------------------------------------------------------------
+
+## Librerías
+
+```{r}
+library(tidyverse)
+library(openxlsx)
+```
+
+<br>
+
+## Motivación
+
+En ciencias biológicas y afines usamos funciones o ecuaciones para representar o modelar fenómenos naturales de interés. Por ejemplo, de acuerdo a @archontoulis2015 la función
+
+
+\begin{equation} 
+y = \dfrac{a\cdot x \cdot y_{\text{asim}}}{y_{\text{asim}} + a \cdot x} - R_d
+(\#eq:hiperRect)
+\end{equation}
+
+
+permitiría representar el incremento en la fotositensis de una planta de ciertas especies cuando la [irradianza](https://es.wikipedia.org/wiki/Irradiancia){target="Blank1"} aumenta.
+
+En la función \@ref(eq:hiperRect), mientras que $y$ indica la variable respuesta, es decir, la fotosíntesis neta, $x$ es la variable explicativa o predictora, en este caso, el nivel de irradianza. Las otras cantidades son los parámetros del modelo. Dichos parámetros, además de tener un significado matemático en términos de la forma de la relación entre la respuesta ($y$) y la predictora ($x$), también pueden tener un significado biológico. Para el ejemplo de la función \@ref(eq:hiperRect), @archontoulis2015 indican que $a$ es la pendidente inicial de $y$ a bajos valores de $x$, $y_{\text{asim}}$ es el valor máximo que puede alcanzar la fotosíntesis neta y $R_d$ es la respiración en oscuridad.
+
+En otro ejemplo, una cantidad de importancia central en la dispersión de una enfermedad infecciosa es el número básico de reproducción $R_0$. Este es el número medio de nuevas infecciones que cada individuo infectado produce cuando es introducido en una población completamente suceptible. Modelos para la dispersión del SARS (Sindrome respiratorio agudo y grave) se han construido para determinar el efecto de la vacunación y la cuarentena sobre $R_0$. Un modelo de estos es [@stewart2015]:
+
+\begin{equation} 
+R_0 = \theta(1-v)\dfrac{d}{1+d}
+(\#eq:r0)
+\end{equation}
+
+En el modelo \@ref(eq:r0), los valores $v$ y $d$ son las variables predictoras. La cantidad $v$ es la fracción de la población que esta vacunada y $d$ es el número medio de días que los individuos infectados permanecen en la población suceptible. Note que la implementación de un programa de vacunación aumenta $v$, mientras que la de un programa de cuarentena reduce $d$. La cantidad $\theta$ es un parámetro particular a la población bajo estudio. @stewart2015 proponen un ejemplo para $\theta = 5$.
+
+En esta sesión revisaremos una estrategia, y código **R** basado en el comando `expand.grid` y en el paquete `r colpkg("ggplot2")`, para graficar modelos como el de las funciones \@ref(eq:hiperRect) o \@ref(eq:r0). Esto puede ser útil en diferentes escenarios. Por ejemplo, usted quiere preparar un gráfico para mostrar la curva del modelo, o mejor aún quiere realizar varias curvas para explorar el efecto de cambiar ciertos parámetros del modelo. También, graficar diferentes modelos competidores que puedan representar el mismo conjunto de datos obtenidos experimentalmente.
+
+<br>
+
+## Estrategia
+
+1.  Defina una secuencia fina de valores para la variable predictora ($x$). Si el modelo tiene dos o más predictoras, digamos $x_1$, $x_2$, etc., debe seleccionar cual de las predictoras graficará en el eje de las abscisas. Para esa predictora debe crear la secuencia fina de valores. Para las otras predictoras debe asignar una secuencia corta (gruesa) de valores (dos a cuatro).
+
+    En **R** utilice el comando `seq` para crear vectores de secuencias con cualquier tamaño de paso, o use el comando `c` para concatenar números en un vector.
+
+2.  Defina un conjunto pequeño (dos a cuatro) de valores para cada parámetro del modelo. Para aquellos parámetros que no quiera evaluar (explorar su efecto), asigneles un sólo valor (es decir, dejelos constantes).
+
+3.  Genere una tabla que combine los valores asignados a todas las predictoras y a todos los parámetros en los pasos (1) y (2). Cada columna de esta tabla debe ser una predictora o un parámetro; y cada fila representaría una combinación particular de valores de predictores y parámetros. Por ejemplo, asuma una función con una predictora ($x$) y tres parámetros $a$ y $b$ y $\lambda$. Si usted decide asignar 10 valores para $x$, tres valores para $a$, dos valores para $b$ y dejar constante $\lambda$, esta tabla debería quedar con cuatro columnas y con $10 \times 3 \times 2 \times 1 = 60$ filas. En **R** esta tabla es generada de forma automática con el comanado `expand.grid`.
+
+4.  Calcule la variable respuesta ($y$) de acuerdo a la función de interés y evaluada en todas las combinaciones de valores (filas) de la tabla del paso (3). Agregue estos valores de $y$ como una nueva columna a la tabla del paso (3).
+
+5.  Realice el gráfico usando los datos de la tabla resultante en el paso (4). La columna $y$ ubiquela en el eje de las ordenadas, la $x$ en el eje de las abscisas, y utilice el color, tipo de linea o punto, y la opción de múltiples facetas (en `r colpkg("ggplot2")`), para representar las combinaciones de valores de los parámetros y las otras predictoras (si las hay).
+
+<br>
+
+## Ejemplo: código **R**
+
+Para mostrar la estrategia de cinco pasos usaremos la función \@ref(eq:hiperRect) como ejemplo. Utilizaremos valores similares a los propuestos en la Figura 2 de @archontoulis2015. Ellos expresan la fotosíntesis neta (respuesta $y$) en &mu;mol CO~2~ m^-2^ s^-1^ y la irradianza (la predictora $x$) en &mu;mol de fotones m^-2^ s^-1^, con valores entre 200 y unos 2000 de irradianza. Basandose en dichos valores a continuación presentamos el código **R** para ejecutar la estrategia anterior. Descargue todo el código **R** para este ejemplo [aquí](graficos2D_funciones_multivar.R){target="Blank1"}.
+
+Iniciamos con los pasos (1), (2) y (3):
+
+```{r}
+# Paso (1): secuencia para predictoras (irradianza) ----
+x <- seq(from = 200, to = 2000, by = 50)   # umol Fotones / (m2 * s) 
+length(x)   # cuantos valores se generaron
+head(x)     # revise los primeros seis
+tail(x)     # revise los ultimos seis
+
+# Paso (2): parametros ----
+a      <- c(0.02, 0.05, 0.07)  # mol CO2 / mol fotones
+Rd     <- c(1.5, 2, 3)         # umol CO2 / (m2 * s)
+y.asim <- 25                   # umol CO2 / (m2 * s)
+
+# Paso (3): tabla con combinaciones de valores ----
+dat <- expand.grid(x = x, a = a, Rd = Rd, y.asim = y.asim)   # 37 * 3 * 3 * 1 = 333 filas
+
+# revisemos la tabla generada
+str(dat)     # estructura de la tabla (1800 filas, 4 columnas)
+head(dat)    # 1eras. seis filas de la tabla
+```
+
+<br>
+
+En la práctica los pasos (1), (2) y (3) se pueden realizar en un sólo bloque de código directamente dentro del comando `expand.grid` así:
+
+```{r, eval = F}
+# Ejecucion de pasos (1), (2) y (3) en un solo bloque de codigo R:
+dat <- expand.grid(
+  x      = seq(from = 200, to = 2000, by = 50),   # irradianza
+  a      = c(0.02, 0.05, 0.07),      # mol CO2 / mol fotones
+  Rd     = c(1.5, 2, 3),             # umol CO2 / m2*s
+  y.asim = 25                        # umol CO2 / m2*s
+)
+```
+
+<br>
+
+Ahora revisemos el código **R** para el paso (4):
+
+```{r}
+# Paso (4): evaluacion de la funcion o calculo de y ----
+dat <- dat %>%
+  mutate(
+    y = a*x*y.asim / (y.asim + a*x) - Rd
+  )
+
+# Exploremos la nueva tabla:
+head(dat)            # 1eras. 6 filas de la tabla
+sapply(dat, range)   # el min y max de cada variable
+```
+
+<br>
+
+Finalmente revisemos el código **R** para el paso (5) en el cual diseñamos el gráfico con `r colpkg("ggplot2")`:
+
+```{r, fig.width=7, fig.height=2.8}
+# Paso (5): Grafico ----
+ggplot(dat, aes(x = x, y = y, color = as.character(a) )) + 
+  geom_line() +
+  geom_hline(yintercept = c(y.asim/2, y.asim), size = 0.3, linetype = "dashed") +
+  facet_grid(~ Rd, labeller = label_both) + xlim(0,2000) +
+  labs(x = "Irradianza", y = "fotosíntesis neta", color = "a")
+```
+
+Observamos que al incrementarse la irradianza se aumenta la fotosíntesis, entre mayor sea $a$, la fotositensis crece más rápido con la irradianza, no obstante, un valor mayor de $R_d$ disminuye en general la fotosíntesis para cualquier valor de irradianza.
+
+En el código **R** para [este ejemplo](graficos2D_funciones_multivar.R){target="Blank1"} puede encontrar, a manera de anexo, como agregar etiquetas a los ejes del gráfico con notación matemática para incluir las unidades de medida de las variables y parámetros. El gráfico queda como sigue:
+
+```{r, echo = F, fig.width=6, fig.height=3}
+# Anexo: notacion matematica en el grafico ----
+# Definicion de etiquetas a los ejes del grafico con notacion matematica (de R)
+texto.y1 <- expression(
+  "Fotosíntesis neta ("*mu*"mol C0"[2]~~m^-2~s^-1*")"      # esto es notacion matematica de R, ver ayuda en: ?plotmath
+)
+texto.y2 <- expression(
+  atop("Fotosíntesis neta", "("*mu*"mol C0"[2]~~m^-2~s^-1*")" ) 
+)
+
+texto.x <- expression(
+  "Irradianza ("*mu*"mol Fotones"~~m^-2~s^-1*")" 
+)
+
+texto.color <- expression(
+  "a (mol C0"[2]~~mol^-1~Fotones*")" 
+)
+
+# Se agrega columna Rd.math al data.frame 'dat' con etiquetas para Rd en escritura
+# matematica. Esto para lograr un subindice en la etiqueta de Rd en el grafico
+dat <- dat %>%
+  mutate(
+    Rd.math = recode(
+      Rd,
+      "1.5" = "R[d] == 1.5",   # esto es notacion matematica de R, ver ayuda en: ?plotmath
+      "2"   = "R[d] == 2.0",
+      "3"   = "R[d] == 3.0",
+    )
+  )
+
+# Grafico con todo lo anterior
+# Note el uso de la nueva columna Rd.math en las facetas
+# y el uso del valor "label_parsed" para el argumento "labeller" en
+# facet_grid
+ggplot(dat, aes(x = x, y = y, color = as.character(a) )) + 
+  geom_line() +
+  geom_hline(yintercept = c(y.asim/2, y.asim), size = 0.3, linetype = "dashed") +
+  facet_grid(~ Rd.math, labeller = label_parsed) + xlim(0,2000) +
+  labs(x = texto.x, y = texto.y2, color = texto.color) +
+  theme(legend.position = "top")
+```
+
+<br>
+
+## Ejercicios
+
+1. Considere la función \@ref(eq:r0) sobre el número básico de reproducción para una enfermedad infecciosa tal como el SARS. Aplique la estrategia de cinco pasos para realizar la gráfica de $R_0$ en función de $d$, el número medio de días que los individuos infectados permanecen en la población suceptible. Use 5 y 8 como valores de $\theta$ y para $v$ utilice las fracciones 0.1, 0.3, 0.5. Interprete.
+
+    ```{r, echo = F}
+sol <- '# librerias
+library(tidyverse)
+
+# Version sencilla (por defecto) de la respuesta -----
+# Pasos (1), (2), (3) y (4) -----
+datos <- expand.grid(
+  d = seq(0,20,0.5),
+  v = c(0.1, 0.3, 0.5),
+  theta = c(5,8)
+) %>%
+  mutate(
+    R0 = theta*(1-v)*d/(1+d)
+  )
+
+# Paso (5): Grafico ----
+ggplot(datos, aes(x = d, y = R0, color = as.factor(v))) +
+  geom_line(size = 1) +
+  labs(color = "Fracción de\\nvacunados (v)",
+       x = "Días (promedio) que los individuos infectados\\npermanecen en la población suceptible (d)") + 
+  facet_grid(~ theta, labeller = label_both) +
+  theme(legend.position = "top")'
+
+details(sol, summary = "**Solución por defecto**")
+```
+
+    ```{r, echo = F}
+sol <- 'library(tidyverse)
+
+# Version avanzada de la respuesta -----
+# Pasos (1), (2), (3) y (4) -----
+datos <- expand.grid(
+  d = seq(0,20,0.5),
+  v = c(0.1, 0.3, 0.5),
+  theta = c(5,8)
+) %>%
+  mutate(
+    theta.text = paste0("theta == ", theta),
+    R0 = theta*(1-v)*d/(1+d)
+  )
+
+# Tabla para agregar la formula al 2do. panel o faceta:
+f <- "R[0] == frac(theta*d*(1-v), 1+d)"
+df <- data.frame(
+  theta.text = unique(datos$theta.text),
+  d = 15,
+  R0 = 1,
+  label = c("", f)
+)
+
+# Paso (5): Grafico ----
+ggplot(datos, aes(x = d, y = R0)) +
+  geom_line(aes(color = as.factor(v)), size = 1) +
+  geom_text(aes(label = label), data = df, parse = T) +
+  scale_color_manual(values = c("0.1" = "#401350", "0.3" = "#BF2D72", "0.5" = "#F9D25F")) +
+  labs(color = "Fracción de\\nvacunados (v)",
+       x = "Días (promedio) que los individuos infectados\\npermanecen en la población suceptible (d)", 
+       y = expression(R[0])) + 
+  facet_grid(~ theta.text, labeller = label_parsed) +
+  theme(legend.position = "top")'
+
+details(sol, summary = "**Solución con código avanzado**")
+```
+
+
+2. De acuerdo a @archontoulis2015, el modelo de Ricker esta dado por la función:
+\begin{equation} 
+y = axe^{-bx}
+(\#eq:ricker)
+\end{equation} Explore el efecto de mover los parámetros $a$ y $b$ cuando la predictora $x$ aumenta en un intervalo de 0 a 10. Para $a$ use los valores 0.01, 0.05 y 0.09; y para $b$ utilice 0.1, 0.5 y 0.9. Interprete.
+
+    ```{r, echo = F}
+sol <- 'library(tidyverse)
+dat <- expand.grid(
+  a = c(0.01, 0.05, 0.09),
+  b = c(0.1, 0.5, 0.9),
+  x = seq(0,10,0.1)
+) %>%
+  mutate(
+    y = a*x*exp(-b*x)
+  )
+
+# Grafico
+ggplot(dat, aes(x = x, y = y, color = as.factor(a))) +
+  geom_line() + facet_grid(~ b, labeller = label_both)'
+
+details(sol, summary = "**Solución**")
+```
+
+
+```{r, echo = F, eval = F, include = F}
+library(tidyverse)
+dat <- expand.grid(
+  a = c(0.01, 0.05, 0.09),
+  b = c(-0.3, -0.1, 0.1, 0.5, 0.9),
+  x = seq(0,10,0.1)
+) %>%
+  mutate(
+    y = a*x*exp(-b*x)
+  )
+
+# Grafico
+ggplot(dat, aes(x = x, y = y, color = as.factor(a))) +
+  geom_line() + facet_wrap(~ b, labeller = label_both, scales = "free_y")
+```
+
+
+
+<br>
+
+## Referencias {#ref}
+
+<div id="refs"></div>
+
+<br>
+
+## Para saber más
+
+La geometría `geom_function` del paquete `r colpkg("ggplot2")` recibe una objeto de clase `function` con al menos un argumento `x`,  lo evalua de forma automática en la `x` y permite de forma opcional asignarle más argumentos de la función como una lista. Aquí un ejemplo:
+
+```{r, fig.width=3.8, fig.height=2.9}
+# Se define la funcion:
+f <- function(x, a, y.asim, Rd) a*x*y.asim / (y.asim + a*x) - Rd
+
+# Se realiza el grafico con tres curvas para mostrar el cambio en 'a'
+ggplot() + xlim(200, 2000) +
+  geom_function(aes(colour = "0.02"), 
+                fun = f, args = list(a = 0.02, y.asim = 25, Rd = 2)) +
+    geom_function(aes(colour = "0.05"), 
+                fun = f, args = list(a = 0.05, y.asim = 25, Rd = 2)) +
+    geom_function(aes(colour = "0.07"), 
+                fun = f, args = list(a = 0.07, y.asim = 25, Rd = 2)) +
+  labs(colour = "a", x = "Irradianza", y = "Fotosíntesis neta") +
+  ylim(0,25)
+```
+
+Esta alternativa es útil cuando se van a realizar una o unas pocas curvas en un sólo plano, pero no es claro el uso de `facet_grid`. Para más ejemplos revisar la ayuda del comando: `?geom_function`.
+
+
+
+
+<br>
+

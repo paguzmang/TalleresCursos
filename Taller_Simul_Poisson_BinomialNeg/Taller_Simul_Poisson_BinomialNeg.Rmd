@@ -107,10 +107,24 @@ Consulte la viñeta del paquete `r colpkg("openxlsx")` [aquí](https://cran.r-pr
 
 La distribución Poisson tiene como función de (masa de) probabilidad:
 
-$$f(y\ ; \mu) = \dfrac{\mu^y \times e^{-\mu}}{y!} \ , \quad \text{ con } y = \{0,1,2,3,\ldots\} \quad { \text{ y } \quad \mu > 0 }  $$
+$$f(y\ ; \lambda) = \dfrac{\lambda^y \times e^{-\lambda}}{y!} \ , \quad \text{ con } y = \{0,1,2,3,\ldots\} \quad { \text{ y } \quad \lambda > 0 }  $$
 La media y varianza de una variable aleatoria Poisson es:
 
-$$ \text{E}(Y) = \mu \quad  \text{ y } \quad \text{Var}(Y) = \mu$$ 
+$$ \text{E}(Y) = \lambda \quad  \text{ y } \quad \text{Var}(Y) = \lambda$$ 
+
+### Ejemplo 1: Modelo Poisson
+
+Suponga que una variable aleatoria $Y$ sigue un modelo de probabilidad Poisson con $\lambda = 4$. Calcular la probabilidad de que $Y \leq 2$.
+
+**Solución**
+
+\begin{eqnarray*}
+P(Y \leq 2)  =  \sum_{y = 0}^2 f(y) & = & f(0) + f(1) + f(2) \\
+& = & \dfrac{4^0 \times e^{-4}}{0!} + \dfrac{4^1 \times e^{-4}}{1!} + \dfrac{4^2 \times e^{-4}}{2!}
+\end{eqnarray*}
+
+
+
 
 <br>
 

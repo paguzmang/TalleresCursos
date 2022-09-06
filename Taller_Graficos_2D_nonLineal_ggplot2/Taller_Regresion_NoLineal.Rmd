@@ -1,0 +1,230 @@
+---
+title: "Introducción a Regresión no lineal con **R**"
+author: "Pablo Andrés Guzmán<br>Taller R y Rmarkdown"
+date: "Sep 2022"
+output: 
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    number_sections: false
+    css: style_font_size.css
+    #code_folding: show
+    #df_print: kable
+csl: apa.csl
+#csl: http://www.zotero.org/styles/harvard1
+bibliography: /Users/pabloandres/Documents/Dropbox/Curso/mibase.bib
+link-citations: yes
+---
+
+```{css, echo = F}
+.badCode {
+background-color: LIGHTGOLDENRODYELLOW;
+}
+/* dos columnas */
+.column-left{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+.column-right{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all !important;
+  word-wrap: initial !important;
+}
+```
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+library(checkdown)
+library(details)
+library(wakefield)
+library(randomNames)
+library(kableExtra)
+#library(learnr)
+opts_chunk$set(echo = TRUE, comment = NULL, warning = F, 
+               message = F, fig.align = 'center', class.output="badCode",
+               fig.width = 3.4, fig.height = 3)
+```
+
+```{r colFmt, include = F}
+# Funcion para colorear texto a discrecion en Rmarkdown
+# tomada de: https://stackoverflow.com/questions/29067541/how-to-change-the-font-color
+colFmt = function(x,color){
+  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste("\\textcolor{",color,"}{",x,"}",sep="")
+  else if(outputFormat == 'html')
+    paste("<font color='",color,"'>",x,"</font>",sep="")
+  else
+    x
+}
+colpkg <- function(x) colFmt(x = x, color = "goldenrod")
+```
+
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy(position = "right")
+```
+
+```{r, echo = F, eval = F}
+rintimg::img_intensify(target = ".png")  # para hacer zoom en imagenes
+# Nota: el problema con esto es que tambien incluye la imagen del icono
+# que pone el paquete klippy en la esquina superior de los chunk's de codigo
+# entonces cuando se hace clic en este icono para copiar el codigo
+# se agranda la imagen del codigo y esto es molesto.
+```
+
+<br>
+
+***
+
+Existen ciertos fenómenos que se encuentran mejor modelados mediante funciones no lineales que con funciones lineales. En este recurso, presentamos una introducción sobre la aplicación de _regresión no lineal_ en **R**, una técnica para ajustar modelos **no lineales** a un conjunto de datos obtenidos en contextos experimentales u observacionales.
+
+***
+
+<br>
+
+## Librerías
+
+Librerias que tienen que ver con regresión no lineal:
+
+```{r, eval = F}
+library(NISTnls)
+library(nlsMicrobio)
+library(nlraa)
+library(nlstools)
+library(nls2)
+library(drc)
+```
+
+
+```{r}
+library(tidyverse)
+library(openxlsx)
+```
+
+<br>
+
+```{r, eval = F, include = F}
+library(nlraa)
+library(tidyverse)
+# Ejemplo 1 ----
+# Tasa de extension de las hojas como respuesta a la temperatura
+# del meristema en el maiz
+maizeleafext %>%
+  ggplot(aes(x = temp, y = rate)) + geom_point()
+
+
+# Ejemplo 2 ----
+# Datos originales en:
+load("datos/L.minor.rda")
+write.csv(x = L.minor, file = "datos/L_minor.csv", quote = F, row.names = F)
+
+# Simulacion
+Vm <- 126
+K <- 17
+dat <- tibble(
+  conc    = c(2.5, 5, 7.5, 22, 28, 40, 45, 200),
+  rate.mu = Vm*conc / (K + conc),
+  rate    = rate.mu + rnorm(n = length(conc), mean = 0, sd = 0.1*rate.mu)
+)
+ggplot(dat, aes(x = conc, y = rate)) + geom_point() +
+  geom_hline(yintercept = Vm, size = 0.4, linetype = "dashed") +
+  geom_function(fun = ~ Vm*(.x) / (K + .x))
+
+
+# Ajuste:
+m <- nls(rate ~ Vm*conc / (K + conc), data = dat, 
+         start = c(K = 20, Vm = 120), trace = T)
+m
+sqrt(deviance(m) / (8 - 2))
+summary(m)
+
+# Grafico con prediccion
+pred <- tibble(
+  conc = seq(from = min(dat$conc), to = max(dat$conc), length.out = 50),
+  rate.pred = predict(m, newdata = data.frame(conc))
+)
+
+
+ggplot(dat, aes(x = conc, y = rate)) + geom_point() +
+  geom_hline(yintercept = Vm, size = 0.4, linetype = "dashed") +
+  geom_function(fun = ~ Vm*(.x) / (K + .x), color = "blue") +
+  geom_line(aes(x = conc, y = rate.pred), data = pred, color = "red")
+
+f.mm <- function(x, Vm, K) Vm*x / (K + x)
+ggplot(dat, aes(x = conc, y = rate)) + geom_point() +
+  geom_hline(yintercept = 126, size = 0.4, linetype = "dashed") +
+  geom_function(aes(color = "ajustada"), fun = f.mm, 
+                args = list(K = coef(m)["K"], Vm = coef(m)["Vm"])) +
+  geom_function(aes(color = "original"), fun = f.mm, 
+                args = list(K = 17, Vm = 126))
+
+# Ejemplo 3 ----
+load("datos/RGRcurve.rda")
+write.csv(x = RGRcurve, file = "datos/RGRcurve.csv", quote = F, row.names = F)
+
+# Grafico
+ggplot(RGRcurve, aes(Day, RGR)) + geom_point()
+
+# Funcion
+f.exp <- function(Day, b, y0) y0*exp(Day / b)
+
+ggplot(RGRcurve, aes(Day, RGR)) + geom_point() +
+  geom_function(fun = f.exp, args = list(b = 3.76, y0 = 0.164), color = "blue")
+
+
+m <- nls( RGR ~ f.exp(Day, b, y0), data = RGRcurve, 
+         start = c(b = 4.4, y0 = 0.2), trace = T)
+summary(m)
+
+
+# Ejemplo 4 ----
+library(MASS)
+head(wtloss)
+f.biexp <- function(Days, b1, b2, b3) b1*2^(-Days/b2) + b3
+ggplot(wtloss, aes(x = Days, y = Weight)) + geom_point(alpha = 0.4, size = 3) +
+  geom_function(fun = f.biexp, color = "blue",
+                args = list(b1 = 102.684, b2 = 141.91, b3 = 81.374))
+
+
+m <- nls(Weight ~ f.biexp(Days, b1, b2, b3), data = wtloss, 
+         start = c(b1 = 110, b2 = 100, b3 = 80), trace = T)
+summary(m)
+```
+
+## Introducción
+
+Considere los datos sobres
+
+<br>
+
+## Comando `nls` de **R**
+
+El comando `nls` 
+
+
+
+<br>
+
+## Referencias {#ref}
+
+<div id="refs"></div>
+
+<br>
+
+## Para saber más
+
+
+
+<br>
+

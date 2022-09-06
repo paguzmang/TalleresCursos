@@ -20,4 +20,6 @@
 
 - **Sesión 8**. [Moviendo datos entre R y Excel](Taller_R_Excel/Taller_R_Excel.html){target="Blank7"}
 
+- **Sesión 9**. [Gráficos 2D de funciones no lineales en varias variables](Taller_Graficos_2D_nonLineal_ggplot2/Graficos_2D_fun_nonLineal_ggplot2.html){target="Blank8"}
+
 
