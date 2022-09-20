@@ -22,4 +22,6 @@
 
 - **Sesión 9**. [Gráficos 2D de funciones no lineales en varias variables](Taller_Funciones_No_Lineales/Graficos_2D_fun_nonLineal_ggplot2.html){target="Blank8"}
 
+- **Sesión 10**. [Introducción a Regresión no lineal con R](Taller_Funciones_No_Lineales/Taller_Regresion_NoLineal.html){target="Blank9"}
+
 
