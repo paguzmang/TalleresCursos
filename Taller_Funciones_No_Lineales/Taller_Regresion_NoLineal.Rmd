@@ -623,7 +623,46 @@ details(cod, summary = "**Código solución**")
 
 ## Para saber más
 
-Bla bla
+### Parámetros lineales y no lineales
+
+La función $f$ en \@ref(eq:yi) puede tener una mezcla de parámetros lineales y no lineales, y esta condición puede ser evaluada. Un parámetro es no lineal cuando la segunda derivada de la función $f$ con respecto al parámetro no es cero [@archontoulis2015]. 
+
+El comando `D()` del paquete `mosaicCalc` permite ejecutar derivadas con una sintaxis sencilla. Por ejemplo, suponga la siguiente función:
+
+$f(x) = a + bx^2$
+
+Recordando conceptos de cálculo diferencial, la derivada de esta función con respecto a $x$ es:
+
+$f'(x) = \dfrac{df}{dx} = 2bx$
+
+Esta derivada se puede obtener con el comando `D()` (paquete `mosaicCalc`) como:
+
+```{r}
+library(mosaicCalc)
+dx <- D(a + b*x^2 ~ x)
+dx
+```
+
+La 2da. derivada no es más que la derivada de la derivada. Así, la derivada de $f'(x)$ está dada por:
+
+$f''(x) =  \dfrac{d}{dx}\left( \dfrac{df}{dx}\right) = 2b$
+
+En **R** esto se logra aplicando una segunda vez el comando `D()` sobre el resultado previo de este mismo comando:
+
+```{r}
+# Aplicando derivada a la derivada de la funcion anterior
+D(dx(x) ~ x)
+```
+
+```{r}
+# Calculando directamente la 2da. derivada de la funcion f original
+D(a + b*x^2 ~ x & x)
+```
+
+
+
+
+
 
 
 <br>
