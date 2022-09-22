@@ -2021,6 +2021,9 @@ Ritz, C., &amp; Streibig, J. C. (2008). <em>Nonlinear regression with <span>R</s
 <div id="parámetros-lineales-y-no-lineales" class="section level3">
 <h3>Parámetros lineales y no lineales</h3>
 <p>La función <span class="math inline">\(f\)</span> en <a href="#eq:yi">(3)</a> puede tener una mezcla de parámetros lineales y no lineales, y esta condición puede ser evaluada. Un parámetro es no lineal cuando la segunda derivada de la función <span class="math inline">\(f\)</span> con respecto al parámetro no es cero <span class="citation">(<a href="#ref-archontoulis2015" role="doc-biblioref">Archontoulis &amp; Miguez, 2015</a>)</span>.</p>
+<p><br></p>
+<div id="derivando-en-r" class="section level4">
+<h4>Derivando en R</h4>
 <p>El comando <code>D()</code> del paquete <code>mosaicCalc</code> permite ejecutar derivadas con una sintaxis sencilla. Por ejemplo, suponga la siguiente función:</p>
 <p><span class="math inline">\(f(x) = a + bx^2\)</span></p>
 <p>Recordando conceptos de cálculo diferencial, la derivada de esta función con respecto a <span class="math inline">\(x\)</span> es:</p>
@@ -2030,19 +2033,38 @@ Ritz, C., &amp; Streibig, J. C. (2008). <em>Nonlinear regression with <span>R</s
 dx &lt;- D(a + b*x^2 ~ x)
 dx</code></pre>
 <pre class="badCode"><code>function (x, a = 0.8, b) 
-b * (2 * x)</code></pre>
+2 * b * x</code></pre>
 <p>La 2da. derivada no es más que la derivada de la derivada. Así, la derivada de <span class="math inline">\(f&#39;(x)\)</span> está dada por:</p>
 <p><span class="math inline">\(f&#39;&#39;(x) = \dfrac{d}{dx}\left( \dfrac{df}{dx}\right) = 2b\)</span></p>
 <p>En <strong>R</strong> esto se logra aplicando una segunda vez el comando <code>D()</code> sobre el resultado previo de este mismo comando:</p>
 <pre class="r"><code># Aplicando derivada a la derivada de la funcion anterior
 D(dx(x) ~ x)</code></pre>
 <pre class="badCode"><code>function (x, a = 0.8, b) 
-b * 2</code></pre>
-<pre class="r"><code># Calculando directamente la 2da. derivada de la funcion f original
+2 * b</code></pre>
+<p>Para ahorrar escritura de código, el comando <code>D()</code> permite la siguiente sintaxis para ejecutar la 2da. derivada:</p>
+<pre class="r"><code># Calculando directamente la 2da. derivada de la 
+# funcion f original con respecto a x
 D(a + b*x^2 ~ x &amp; x)</code></pre>
 <pre class="badCode"><code>function (x, a = 0.8, b) 
-b * 2</code></pre>
+2 * b</code></pre>
 <p><br></p>
+</div>
+<div id="verificando-linealidad-sobre-parámetros" class="section level4">
+<h4>Verificando linealidad sobre parámetros</h4>
+<p>Podemos entonces usar el comando <code>D()</code> para verificar si un parámetro es lineal en cierta función <span class="math inline">\(f\)</span>. Por ejemplo en el modelo de Michaelis-Menten:</p>
+<p><span class="math display">\[f(x) = \dfrac{V_m x}{K + x}\]</span></p>
+<p>el parámetro <span class="math inline">\(V_m\)</span> es lineal puesto que:</p>
+<pre class="r"><code># 2da. derivada con respecto a Vm
+D(Vm*x / (K + x) ~ Vm &amp; Vm)</code></pre>
+<pre class="badCode"><code>function (x, K, Vm) 
+0</code></pre>
+<p>mientras que el parámetro <span class="math inline">\(K\)</span> no es lineal puesto que:</p>
+<pre class="r"><code># 2da. derivada con respecto a Vm
+D(Vm*x / (K + x) ~ K &amp; K)</code></pre>
+<pre class="badCode"><code>function (x, K, Vm) 
+(2 * Vm * x)/(x^3 + 3 * x^2 * K + 3 * x * K^2 + K^3)</code></pre>
+<p><br></p>
+</div>
 </div>
 </div>
 

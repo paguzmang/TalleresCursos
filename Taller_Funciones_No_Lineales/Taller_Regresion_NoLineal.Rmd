@@ -77,6 +77,8 @@ colpkg <- function(x) colFmt(x = x, color = "goldenrod")
 ```
 
 ```{r klippy, echo=FALSE, include=TRUE}
+# install.packages("remotes")
+# remotes::install_github("rlesur/klippy")
 klippy::klippy(position = "right")
 ```
 
@@ -625,7 +627,11 @@ details(cod, summary = "**Código solución**")
 
 ### Parámetros lineales y no lineales
 
-La función $f$ en \@ref(eq:yi) puede tener una mezcla de parámetros lineales y no lineales, y esta condición puede ser evaluada. Un parámetro es no lineal cuando la segunda derivada de la función $f$ con respecto al parámetro no es cero [@archontoulis2015]. 
+La función $f$ en \@ref(eq:yi) puede tener una mezcla de parámetros lineales y no lineales, y esta condición puede ser evaluada. Un parámetro es no lineal cuando la segunda derivada de la función $f$ con respecto al parámetro no es cero [@archontoulis2015].
+
+<br>
+
+#### Derivando en R
 
 El comando `D()` del paquete `mosaicCalc` permite ejecutar derivadas con una sintaxis sencilla. Por ejemplo, suponga la siguiente función:
 
@@ -654,10 +660,38 @@ En **R** esto se logra aplicando una segunda vez el comando `D()` sobre el resul
 D(dx(x) ~ x)
 ```
 
+Para ahorrar escritura de código, el comando `D()` permite la siguiente sintaxis para ejecutar la 2da. derivada:
+
 ```{r}
-# Calculando directamente la 2da. derivada de la funcion f original
+# Calculando directamente la 2da. derivada de la 
+# funcion f original con respecto a x
 D(a + b*x^2 ~ x & x)
 ```
+
+<br>
+
+#### Verificando linealidad sobre parámetros
+
+Podemos entonces usar el comando `D()` para verificar si un parámetro es lineal en cierta función $f$. Por ejemplo en el modelo de Michaelis-Menten:
+
+$$f(x) = \dfrac{V_m x}{K + x}$$
+
+el parámetro $V_m$ es lineal puesto que:
+
+```{r}
+# 2da. derivada con respecto a Vm
+D(Vm*x / (K + x) ~ Vm & Vm)
+```
+
+mientras que el parámetro $K$ no es lineal puesto que:
+
+```{r}
+# 2da. derivada con respecto a K
+D(Vm*x / (K + x) ~ K & K)
+```
+
+
+
 
 
 
