@@ -670,7 +670,7 @@ D(a + b*x^2 ~ x & x)
 
 <br>
 
-#### Verificando linealidad sobre parámetros
+#### Verificando linealidad sobre los parámetros
 
 Podemos entonces usar el comando `D()` para verificar si un parámetro es lineal en cierta función $f$. Por ejemplo en el modelo de Michaelis-Menten:
 
@@ -689,6 +689,31 @@ mientras que el parámetro $K$ no es lineal puesto que:
 # 2da. derivada con respecto a K
 D(Vm*x / (K + x) ~ K & K)
 ```
+
+
+<br>
+
+#### Aprovechando la condición de linealidad
+
+Si al menos uno de los parámetros en un modelo es lineal de acuerdo a la regla de la 2da. derivada mostrada en la sección anterior, podemos aprovechar esta condición para facilitar el proceso de estimación por mínimos cuadrados. 
+
+El comando `nls` tiene el argumento `algorithm` en el cual se define el método de optimización numérica. Por defecto, dicho método es el de Gauss-Newton. Sin embargo, aquí también podemos indicar el método de Golub-Pereyra (`plinear`) de _mínimos cuadrados parcialmente lineales_. Al seleccionar este método, sólo debemos definir valores de inicio para aquellos parámetros _no_ lineales, aunque al escribir la fórmula del modelo, también se debe omitir el parámetro. Revisar más sobre este aspecto en la sección 4.3 de @ritz2008.
+
+<br>
+
+### Datos agrupados
+
+Con datos agrupados nos refererimos a escenarios en donde se intenta comparar la función media entre dos o más grupos como en el ejemplo de la Puromycina de la Figura \@ref(fig:curvas)C. Observe que la comparación de los grupos se manejo usando el parámetro $\beta$ y la variable dummy $z$, la cual era 1 si `state = treated` y 0 si `state = untreated`. Otra manera de realizar la comparación o ajustar simultaneamente el mismo modelo para cada grupo (y luego tener la posibilidad de compararlos) es con la siguiente sintaxis:
+
+```{r}
+# Codigo R para ejecutar un modelo separado para cada grupo:
+# (Datos agrupados)
+m <- nls(rate ~ Vm[state]*conc / (K[state] + conc), data = puromy,
+         start = list(Vm = c(200, 160), K = c(0.01, 0.01)) )
+summary(m)
+```
+
+Observese que para cada parámetro, se reportan estimaciones para las dos categorías de la variable `state`. Revisar el capítulo 8 de @ritz2008 para más aspectos sobre este tema.
 
 
 

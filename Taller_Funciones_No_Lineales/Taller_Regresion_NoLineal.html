@@ -2033,38 +2033,71 @@ Ritz, C., &amp; Streibig, J. C. (2008). <em>Nonlinear regression with <span>R</s
 dx &lt;- D(a + b*x^2 ~ x)
 dx</code></pre>
 <pre class="badCode"><code>function (x, a = 0.8, b) 
-2 * b * x</code></pre>
+b * (2 * x)</code></pre>
 <p>La 2da. derivada no es más que la derivada de la derivada. Así, la derivada de <span class="math inline">\(f&#39;(x)\)</span> está dada por:</p>
 <p><span class="math inline">\(f&#39;&#39;(x) = \dfrac{d}{dx}\left( \dfrac{df}{dx}\right) = 2b\)</span></p>
 <p>En <strong>R</strong> esto se logra aplicando una segunda vez el comando <code>D()</code> sobre el resultado previo de este mismo comando:</p>
 <pre class="r"><code># Aplicando derivada a la derivada de la funcion anterior
 D(dx(x) ~ x)</code></pre>
 <pre class="badCode"><code>function (x, a = 0.8, b) 
-2 * b</code></pre>
+b * 2</code></pre>
 <p>Para ahorrar escritura de código, el comando <code>D()</code> permite la siguiente sintaxis para ejecutar la 2da. derivada:</p>
 <pre class="r"><code># Calculando directamente la 2da. derivada de la 
 # funcion f original con respecto a x
 D(a + b*x^2 ~ x &amp; x)</code></pre>
 <pre class="badCode"><code>function (x, a = 0.8, b) 
-2 * b</code></pre>
+b * 2</code></pre>
 <p><br></p>
 </div>
-<div id="verificando-linealidad-sobre-parámetros" class="section level4">
-<h4>Verificando linealidad sobre parámetros</h4>
+<div id="verificando-linealidad-sobre-los-parámetros" class="section level4">
+<h4>Verificando linealidad sobre los parámetros</h4>
 <p>Podemos entonces usar el comando <code>D()</code> para verificar si un parámetro es lineal en cierta función <span class="math inline">\(f\)</span>. Por ejemplo en el modelo de Michaelis-Menten:</p>
 <p><span class="math display">\[f(x) = \dfrac{V_m x}{K + x}\]</span></p>
 <p>el parámetro <span class="math inline">\(V_m\)</span> es lineal puesto que:</p>
 <pre class="r"><code># 2da. derivada con respecto a Vm
 D(Vm*x / (K + x) ~ Vm &amp; Vm)</code></pre>
-<pre class="badCode"><code>function (x, K, Vm) 
+<pre class="badCode"><code>function (Vm, x, K) 
 0</code></pre>
 <p>mientras que el parámetro <span class="math inline">\(K\)</span> no es lineal puesto que:</p>
-<pre class="r"><code># 2da. derivada con respecto a Vm
+<pre class="r"><code># 2da. derivada con respecto a K
 D(Vm*x / (K + x) ~ K &amp; K)</code></pre>
-<pre class="badCode"><code>function (x, K, Vm) 
-(2 * Vm * x)/(x^3 + 3 * x^2 * K + 3 * x * K^2 + K^3)</code></pre>
+<pre class="badCode"><code>function (K, Vm, x) 
+Vm * x * (2 * (K + x))/((K + x)^2)^2</code></pre>
 <p><br></p>
 </div>
+<div id="aprovechando-la-condición-de-linealidad" class="section level4">
+<h4>Aprovechando la condición de linealidad</h4>
+<p>Si al menos uno de los parámetros en un modelo es lineal de acuerdo a la regla de la 2da. derivada mostrada en la sección anterior, podemos aprovechar esta condición para facilitar el proceso de estimación por mínimos cuadrados.</p>
+<p>El comando <code>nls</code> tiene el argumento <code>algorithm</code> en el cual se define el método de optimización numérica. Por defecto, dicho método es el de Gauss-Newton. Sin embargo, aquí también podemos indicar el método de Golub-Pereyra (<code>plinear</code>) de <em>mínimos cuadrados parcialmente lineales</em>. Al seleccionar este método, sólo debemos definir valores de inicio para aquellos parámetros <em>no</em> lineales, aunque al escribir la fórmula del modelo, también se debe omitir el parámetro. Revisar más sobre este aspecto en la sección 4.3 de <span class="citation">Ritz &amp; Streibig (<a href="#ref-ritz2008" role="doc-biblioref">2008</a>)</span>.</p>
+<p><br></p>
+</div>
+</div>
+<div id="datos-agrupados" class="section level3">
+<h3>Datos agrupados</h3>
+<p>Con datos agrupados nos refererimos a escenarios en donde se intenta comparar la función media entre dos o más grupos como en el ejemplo de la Puromycina de la Figura <a href="#fig:curvas">1</a>C. Observe que la comparación de los grupos se manejo usando el parámetro <span class="math inline">\(\beta\)</span> y la variable dummy <span class="math inline">\(z\)</span>, la cual era 1 si <code>state = treated</code> y 0 si <code>state = untreated</code>. Otra manera de realizar la comparación o ajustar simultaneamente el mismo modelo para cada grupo (y luego tener la posibilidad de compararlos) es con la siguiente sintaxis:</p>
+<pre class="r"><code># Codigo R para ejecutar un modelo separado para cada grupo:
+# (Datos agrupados)
+m &lt;- nls(rate ~ Vm[state]*conc / (K[state] + conc), data = puromy,
+         start = list(Vm = c(200, 160), K = c(0.01, 0.01)) )
+summary(m)</code></pre>
+<pre class="badCode"><code>
+Formula: rate ~ Vm[state] * conc/(K[state] + conc)
+
+Parameters:
+     Estimate Std. Error t value Pr(&gt;|t|)    
+Vm1 2.127e+02  6.608e+00  32.185  &lt; 2e-16 ***
+Vm2 1.603e+02  6.896e+00  23.242 2.04e-15 ***
+K1  6.412e-02  7.877e-03   8.141 1.29e-07 ***
+K2  4.771e-02  8.281e-03   5.761 1.50e-05 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 10.4 on 19 degrees of freedom
+
+Number of iterations to convergence: 8 
+Achieved convergence tolerance: 3.623e-06</code></pre>
+<p>Observese que para cada parámetro, se reportan estimaciones para las dos categorías de la variable <code>state</code>. Revisar el capítulo 8 de <span class="citation">Ritz &amp; Streibig (<a href="#ref-ritz2008" role="doc-biblioref">2008</a>)</span> para más aspectos sobre este tema.</p>
+<p><br></p>
 </div>
 </div>
 
