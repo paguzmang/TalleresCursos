@@ -24,4 +24,8 @@
 
 - **Sesión 10**. [Introducción a Regresión no lineal con R](Taller_Funciones_No_Lineales/Taller_Regresion_NoLineal.html){target="Blank9"}
 
+- **Sesión 11**. [Tidyverse: parte 1 (manipulando tablas)](Taller_Tidyverse/Tidyverse_v1.html){target="Blank10"}
+
+- **Sesión 12**. [Tidyverse: parte 2 (formatos ancho y largo)](Taller_Tidyverse/Tidyverse_v2.html){target="Blank11"}
+
 
