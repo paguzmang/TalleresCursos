@@ -1,0 +1,400 @@
+---
+title: "Tidyverse"
+subtitle: "Parte 2: **Cambiando tablas entre formatos largo y ancho**"
+author: "Pablo Andrés Guzmán<br>Taller R y Rmarkdown"
+date: "Ago 2023"
+output: 
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    number_sections: false
+    css: style_font_size.css
+    code_folding: show
+    #df_print: kable
+csl: apa.csl
+#csl: http://www.zotero.org/styles/harvard1
+bibliography: /Users/pabloandres/Documents/Dropbox/Curso/mibase.bib
+link-citations: no
+---
+
+```{css, echo = F}
+.badCode {
+background-color: LIGHTGOLDENRODYELLOW;
+}
+/* dos columnas */
+.column-left{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+.column-right{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all !important;
+  word-wrap: initial !important;
+}
+```
+
+```{r setup, include=FALSE}
+library(knitr)
+library(tidyverse)
+library(checkdown)
+library(details)
+library(wakefield)
+library(randomNames)
+library(kableExtra)
+#library(learnr)
+opts_chunk$set(echo = TRUE, comment = NULL, warning = F, 
+               message = F, fig.align = 'center', class.output="badCode",
+               fig.width = 3.4, fig.height = 3)
+```
+
+```{r colFmt, include = F}
+# Funcion para colorear texto a discrecion en Rmarkdown
+# tomada de: https://stackoverflow.com/questions/29067541/how-to-change-the-font-color
+colFmt = function(x,color){
+  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste("\\textcolor{",color,"}{",x,"}",sep="")
+  else if(outputFormat == 'html')
+    paste("<font color='",color,"'>",x,"</font>",sep="")
+  else
+    x
+}
+colpkg <- function(x) colFmt(x = x, color = "goldenrod")
+```
+
+
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy(position = "right")
+```
+
+```{r, echo = F, eval = F}
+rintimg::img_intensify(target = ".png")  # para hacer zoom en imagenes
+# Nota: el problema con esto es que tambien incluye la imagen del icono
+# que pone el paquete klippy en la esquina superior de los chunk's de codigo
+# entonces cuando se hace clic en este icono para copiar el codigo
+# se agranda la imagen del codigo y esto es molesto.
+```
+
+***
+
+El **tidyverse** es una colección de paquetes diseñados para _data science_ y que comparten un modo de trabajo similar. 
+
+```{r, echo = F, fig.width=8, fig.height=4.5, out.width="70%", fig.cap='Página web del tidyverse: <https://www.tidyverse.org/>{target="Blank0"}'}
+include_graphics("images/tidyverse.png")
+```
+
+<br>
+
+En este recurso aprenderemos el uso de dos comandos del paquete **tidyr**: `pivot_wider` y `pivot_longer`. Para activar los paquetes del **tidyverse** (incluyendo **tidyr**) use el siguiente código:
+
+```{r, eval = F}
+library(tidyverse)  # activando paquetes del tidyverse (dplyr, ggplot2, tidyr, etc.)
+```
+
+***
+
+<br>
+
+## Operador "pipe" (`%>%` ó `|>`)
+
+Este operador permite pasar el objeto que esta a su izquierda como **primer** argumento del comando que está a su derecha, y con esto, favorece la escritura de código donde se deben usar varios comandos, uno detras de otro, para transformar un objeto.
+
+<div class="column-left">
+El operador `%>%` (ó `|>`) pasa el objeto a su izquierda como primer argumento del comando a su derecha. Es decir, el código:
+
+<center>
+`f(x,y)`
+</center>
+
+
+es equivalente a
+
+<center>
+`x %>% f(y)`
+
+`x |> f(y)`
+</center>
+
+</div>
+<div class="column-right">
+```{r, echo = F, fig.width=3, fig.height=4.5, out.width="60%"}
+include_graphics("images/pipe_flechas.png")
+```
+</div>
+
+<br>
+
+## Formatos ancho y largo
+
+```{r datw, include=F}
+set.seed(589)
+datw <- tibble(
+  id  = 1:6,
+  g   = sample(letters[1:3], size = 6, replace = T),
+  y1  = sample(5:20, size = 6, replace = T),
+  y2  = 1.06*y1 ,
+  y3  = 1.15*y2
+)
+datl <- pivot_longer(
+  datw, cols = -c(id,g), names_to = 'y', values_to = 'value'
+)
+save(datl, datw, file = 'datwl.RData')
+```
+
+Considere las siguientes dos tablas como ejemplos de formatos ancho (izquierda) y largo (derecha):
+
+<br>
+
+<div class="column-left">
+```{r, echo=T}
+datw  # ANCHO
+```
+</div>
+<div class="column-right">
+```{r, echo=T}
+datl  # LARGO
+```
+</div>
+
+<br>
+
+Son múltiples los escenarios en los cuales necesitamos pasar los datos desde una organización a otra y los comandos `pivot_wider` y `pivot_longer` (paquete **tidyr**) permiten cambiar esta organización desde uno a otro formato. A continuación mostramos el uso de cada comando. Para esto [descargue las tablas de ejemplo](datwl.RData) presentadas arriba y prepare su script de **R** como sigue:
+
+```{r, eval = F}
+library(tidyverse)    # active el tidyverse
+rm(list = ls())       # Borre todo su ambiente de trabajo
+
+# Cargue los datos
+load('datwl.RData')   # el archivo 'datwl.RData' debe estar en su directorio de trabajo
+ls()                  # imprima los nombres de los objetos cargados
+
+# Imprima las tablas para conocer su contenido
+datw    # ancho
+datl    # largo
+```
+
+
+<br>
+
+## `pivot_wider`
+
+Este comando recibe los datos en formato largo y los entrega en formato ancho. Cuenta con tres argumentos principales cuyo uso se muestra en seguida:
+
+```{r}
+# Ejemplo de uso del comando pivot_wider ----
+pivot_wider(
+  data        = datl,   # data.frame en formato largo
+  
+  # columna desde donde tomaremos los nombres de las nuevas columnas
+  names_from  = 'y',
+  
+  # columna desde donde tomaremos los valores para llenar las nuevas columnas 
+  values_from = 'value'    
+)
+```
+
+<br>
+
+## `pivot_longer`
+
+Este comando recibe los datos en formato ancho y los entrega en formato largo. Cuenta con cuatro argumentos principales cuyo uso se muestra en seguida:
+
+```{r}
+# Ejemplo de uso del comando pivot_longer ----
+pivot_longer(
+  data = datw,    # datos en formato ancho
+  
+  # Columnas de data que seran cambiadas a formato largo
+  cols = y1:y3, 
+  
+  # ¿Como se quiere llamar la nueva columna indicadora?
+  names_to = 'y', 
+  
+  # ¿Como se quiere llamar la nueva columna que tendra los valores?
+  values_to = 'value'
+  )
+```
+
+<br>
+
+Un aspecto que permite validar, al menos parcialmente, el `pivot` a formato largo es que el número de filas de la nueva tabla en formato largo debe ser igual al producto de la cantidad de filas de la tabla en formato ancho por el número de variables a "pivotear". Para el ejemplo de arriba, la tabla en formato ancho tiene 6 filas y se "pivotearon" 3 columnas (`y1`, `y2` y `y3`), luego, la nueva tabla en formato largo debe tener 6 x 3 = 18 filas totales.
+
+
+<br>
+
+***
+
+## Ejercicios
+
+### Ej. 1: Datos longitudinales
+
+Los datos `carData::WeightLoss` presentan la perdida de peso y una valoración de autoestima para `r nrow(carData::WeightLoss)` sujetos en tres tratamientos (`Control`, `Diet` y `DietEx`) durante tres meses.
+
+```{r}
+library(carData)
+?WeightLoss   # para solicitar ayuda sobre los datos
+dat <- WeightLoss
+dat <- mutate(WeightLoss, group = factor(group))
+str(dat)
+```
+
+<br>
+
+Convierta los datos en formato largo "pivoteando" las columnas `wl1`, `wl2` y `wl3`. La tabla debe quedar como se muestra a continuación: 
+
+
+```{r, echo = F}
+datl <- dat %>%
+  mutate(
+    id = 1:n(),
+  ) %>%
+  relocate(id, .before = group) %>%
+  pivot_longer(cols = wl1:wl3, names_to = 'month', values_to = 'wl',
+             names_prefix = 'wl') %>%
+  mutate(month = as.numeric(month))
+datl
+```
+
+
+:::: {.orangebox data-latex=""}
+
+**Código solución**
+
+```{r, eval = F, results = 'hide', class.source = "fold-hide"}
+datl <- dat %>%
+  mutate(
+    id = 1:n(),
+  ) %>%
+  relocate(id, .before = group) %>%
+  pivot_longer(cols = wl1:wl3, names_to = 'month', values_to = 'wl',
+             names_prefix = 'wl') %>%
+  mutate(month = as.numeric(month))
+datl
+```
+
+::::
+
+<br>
+
+### Ej. 2: Datos longitudinales, dos variables
+
+En el contexto de los datos del ejercicio anterior considere que se registraron dos variables respuestas para cada sujeto, la perdida de peso (`wl1`, `wl2` y `wl3`) pero también un puntaje de autoestima (`se1`, `se2` y `se3`). Pase los datos a formato largo de tal forma que la nueva tabla se vea como sigue:
+
+```{r, echo = F}
+datl2 <- dat %>%
+  mutate(
+    id = 1:n(),
+  ) %>%
+  relocate(id, .before = group) %>%
+  pivot_longer(cols = wl1:se3, names_to = 'var_month', values_to = 'value') %>%
+  mutate(
+    var   = substr(var_month, 1,2),
+    month = as.numeric(substr(var_month, 3,3))
+  ) %>%
+  select(-var_month) %>%
+  pivot_wider(
+    names_from = 'var',
+    values_from = 'value'
+  )
+datl2
+```
+
+<br>
+
+Para lograr esto, considere los siguientes pasos: 
+
+1. Aplique `mutate` para agregar una nueva columna `id` con un identificador único para cada sujeto. Utilice `relocate` para lograr que esta columna `id` quede de primero.
+
+2. Aplique `pivot_longer` para "pivotear" las columnas `wl1`, `wl2`, `wl3`, `se1`, `se2` y `se3` a una única columna de valores.
+
+3. Utilice `mutate` con el comando `substr` para separar la columna indicadora en dos nuevas columnas, una que contenga sólo los nombres de las variables (`wl` y `se`) y otra que contenga sólo el mes (`1`, `2` y `3`). Remueva la columna indicadora con `select`.
+
+4. Aplique `pivot_wider` para pasar a formato ancho la columna de valores separandola en dos nuevas columnas, una con los valores de `wl` y otra con los de `se`.
+
+:::: {.orangebox data-latex=""}
+
+**Código solución**
+
+```{r, eval = F, results = 'hide', class.source = "fold-hide"}
+datl2 <- dat %>%
+  mutate(
+    id = 1:n(),
+  ) %>%
+  relocate(id, .before = group) %>%
+  pivot_longer(cols = wl1:se3, names_to = 'var_month', values_to = 'value') %>%
+  mutate(
+    var   = substr(var_month, 1,2),
+    month = as.numeric(substr(var_month, 3,3))
+  ) %>%
+  select(-var_month) %>%
+  pivot_wider(
+    names_from = 'var',
+    values_from = 'value'
+  )
+datl2
+```
+
+::::
+
+<br>
+
+### Ej. 3: Estadísticos descriptivos
+
+```{r, include = F}
+library(mosaicData)
+data(Gestation)
+str(Gestation)
+myStats <- function(x) c(min = min(x), max = max(x), m = mean(x), s = sd(x))
+table(Gestation$smoke)
+summary(Gestation$age)
+gestStats <- Gestation %>%
+  filter(!is.na(age) & !is.na(smoke)) %>%
+  mutate(
+    age = cut(age, br = c(14,28,46), labels = c('15-28', '28-45')),
+    smoke = ifelse(smoke == 'now' | smoke == 'until current pregnancy ', 'yes', 'no')
+  ) %>%
+  group_by(age, smoke) %>%
+  summarise(
+    n          = n(),
+    stat       = c('min', 'max', 'mean', 'sd'),
+    stat_value = myStats(wt)
+  ) %>% ungroup()
+save(gestStats, file = 'gestStats.RData')
+```
+
+La  tabla [`gestStats`](gestStats.RData) presenta algunos estadísticos descriptivos del peso al nacimiento por la edad y por el estatus de fumar de la madre generados desde la base de datos `mosaicData::Gestation`.
+
+```{r}
+load('gestStats.RData')  # el archivo 'gestStats.RData' debe estar en el dir. de trabajo
+gestStats   # imprima la tabla
+```
+
+<br>
+
+Observe que el valor de los estadísticos se encuentra en una sóla columna lo que dificulta la lectura de la información. Convierta la tabla `gestStats` a formato ancho de tal forma que la nueva tabla se vea como sigue:
+
+```{r, echo = F}
+pivot_wider(gestStats, names_from = 'stat', values_from = 'stat_value')
+```
+
+
+<br>
+<br>
+
+
+
+
+
+
+
+

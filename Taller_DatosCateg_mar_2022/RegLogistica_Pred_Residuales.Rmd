@@ -1,0 +1,414 @@
+---
+title: "Regresión logística con R"
+subtitle: "Predicciones y residuales"
+author: "Pablo Andrés Guzmán<br>Taller R y Rmarkdown"
+date: "Dic 2022"
+output: 
+  bookdown::html_document2:
+    toc: false
+    #toc_float: true
+    number_sections: false
+    css: style_font_size.css
+    code_folding: show
+    #df_print: kable
+csl: apa.csl
+#csl: http://www.zotero.org/styles/harvard1
+bibliography: /Users/pabloandres/Documents/Dropbox/Curso/mibase.bib
+link-citations: yes
+---
+
+```{css, echo = F}
+.badCode {
+background-color: LIGHTGOLDENRODYELLOW;
+}
+/* dos columnas */
+.column-left{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+.column-right{
+  display: inline-block;
+  width: 48%;
+  text-align: left;
+  vertical-align: middle;
+}
+
+pre code, pre, code {
+  white-space: pre !important;
+  overflow-x: scroll !important;
+  word-break: keep-all !important;
+  word-wrap: initial !important;
+}
+
+div.csl-entry {
+  line-height: 25px;   /* within paragraph */
+  margin-bottom: 17px; /* between paragraphs */
+}
+```
+
+```{r lib, include=FALSE}
+library(knitr)
+library(tidyverse)
+library(checkdown)
+library(details)
+library(wakefield)
+library(randomNames)
+library(kableExtra)
+```
+
+```{r setup, include=FALSE}
+opts_chunk$set(echo = TRUE, comment = NULL, warning = F, 
+               message = F, fig.align = 'center', class.output="badCode",
+               fig.width = 3.4, fig.height = 3)
+```
+
+```{r colFmt, include = F}
+# Funcion para colorear texto a discrecion en Rmarkdown
+# tomada de: https://stackoverflow.com/questions/29067541/how-to-change-the-font-color
+colFmt = function(x,color){
+  outputFormat = knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(outputFormat == 'latex')
+    paste("\\textcolor{",color,"}{",x,"}",sep="")
+  else if(outputFormat == 'html')
+    paste("<font color='",color,"'>",x,"</font>",sep="")
+  else
+    x
+}
+colpkg <- function(x) colFmt(x = x, color = "goldenrod")
+```
+
+
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy(position = "right")
+```
+
+```{r, echo = F, eval = F}
+rintimg::img_intensify(target = ".png")  # para hacer zoom en imagenes
+# Nota: el problema con esto es que tambien incluye la imagen del icono
+# que pone el paquete klippy en la esquina superior de los chunk's de codigo
+# entonces cuando se hace clic en este icono para copiar el codigo
+# se agranda la imagen del codigo y esto es molesto.
+```
+
+```{r lectura, echo = F}
+dat <- read_csv(file = 'datos/plastico.csv')
+```
+
+
+## Ejercicio: Consumo de bebidas en botellas de plástico.
+
+El archivo [`plastico.csv`](https://drive.google.com/file/d/1S8GrpAOO7jR98MOWTXA8rLgLQU2k_A2g/view?usp=sharing){target="Blank1"} contiene los resultados de un estudio observacional, transversal para una muestra de `r nrow(dat)` sujetos,  donde se registró como respuesta (`y`) la posición de abandonar la compra de bebidas en botellas y vasos de plástico y el uso de pitillos de plástico (1 = si se abandona, 0 = no se abandona),  y tres variables predictoras. Una de ellas, `x1`, representa tres regiones del país (A, B y C), otra, `x2`, el estrato socieconómico (bajo, medio y alto) y la otra, `x3`, el número de hijos. Ajuste el siguiente modelo de regresión logística:
+
+\begin{equation*}
+\log{\left(\dfrac{\pi}{1-\pi}\right)} = \beta_0 + \beta_1x^{(B)}_1 + \beta_2x^{(C)}_1 + \beta_3x^{(medio)}_2 + \beta_4x^{(alto)}_2 +  \beta_5x_3
+\end{equation*}
+
+donde $\pi = P(y = 1)$ y 
+
+$$x^{(B)}_1 = \left\lbrace \begin{array}{ll} 1 & \text{si $x_1 = B$} \\ 0 & \text{en otro caso} \end{array} \right. \,; \quad x^{(C)}_1 = \left\lbrace \begin{array}{ll} 1 & \text{si $x_1 = C$} \\ 0 & \text{en otro caso} \end{array} \right. \,; $$
+
+$$x^{(medio)}_2 = \left\lbrace \begin{array}{ll} 1 & \text{si $x_2 = medio$} \\ 0 & \text{en otro caso} \end{array} \right. \,; \quad x^{(alto)}_2 = \left\lbrace \begin{array}{ll} 1 & \text{si $x_2 = alto$} \\ 0 & \text{en otro caso} \end{array} \right.$$
+
+En el archivo [`plastico.csv`](https://drive.google.com/file/d/1S8GrpAOO7jR98MOWTXA8rLgLQU2k_A2g/view?usp=sharing){target="Blank1"}, los datos se encuentran separados por coma, y cada fila representa un sujeto. Ejecute el modelo de regresión logística desde los datos **agrupados** para las tres variables predictoras. Responda las siguientes preguntas:
+
+1. Cálcule la razón de odds que compará el odds de abandar el CBP (compra de bebidas en botellas de plástico) si es de estrato alto contra el mismo odds si es de estrato bajo, y manteniendo el número de hijos y la región constantes.
+
+2. Describa el efecto del número de hijos sobre la probabilidad de abandonar el CBP.
+
+3. Calcule la probabilidad, predicha por el modelo, de abandonar el CBP  si es de la región A, se tienen dos hijos y es de estrato bajo.
+
+4. Calcule la probabilidad predicha de abandonar el CBP para cada fila de la tabla (agrupada)
+
+5. Calcule los residuales de Pearson estandarizados para cada fila de la tabla (agrupada). Ejecute una prueba de normalidad sobre estos residuales. ¿Existen residuales particularmente atípicos? Explique
+
+<br>
+
+## Solución
+
+**Lectura de datos**
+
+```{r, eval = F}
+dat <- read_csv("plastico.csv")
+dat
+```
+
+```{r, echo = F}
+dat
+```
+
+<br>
+
+**Resumen descriptivo**
+
+```{r}
+library(furniture)
+# Media y conteos (%) de x2, c3, y por cada region (x1)
+table1(dat, x2, x3, y, splitby = ~ x1, total = T)
+library(tidyverse)
+# Tabla de frecuencias de x3:
+xtabs(~ x3, data = dat) %>% addmargins()
+```
+
+<br>
+
+**Se re-ordenan los niveles de estrato (x2)**
+
+```{r relevel}
+# Se re-ordenan los niveles del estrato (x2)
+dat <- mutate(
+  dat,
+  x2 = fct_relevel(x2, "bajo", "medio")
+)
+levels(dat$x2)   # se verifica la nueva ordenacion
+```
+
+<br>
+
+**Se generan datos agrupados**
+
+```{r grouping}
+# Se agrupan los datos:
+datg <- dat %>%
+  group_by(x1, x2, x3) %>%
+  summarise(
+    n  = n(),       # total por grupo
+    ne = sum(y),    # nro. de exitos 
+    nf = n - ne     # nro. de fracasos
+  ) %>% ungroup()
+
+# Nueva tabla:
+datg
+
+# Verificacion del numero total de individuos
+sum(datg$n) == nrow(dat)
+
+# Verificacion del numero total de exitos
+sum(datg$ne) == sum(dat$y)
+```
+
+<br>
+
+**Modelo**
+
+```{r glm}
+# Ajuste de modelo
+m <- glm(cbind(ne, nf) ~ x1 + x2 + x3, data = datg, family = binomial)
+summary(m)
+```
+
+<br>
+
+**Razones de odds (OR) desde coef**
+
+```{r}
+# Tabla de OR + IC95%
+cbind(
+  OR = exp(m$coef)[-1],
+  exp(confint(m))[-1, ]
+) %>% round(3)
+```
+
+<br>
+
+**Una sóla predicción**
+
+Para obtener una predicción se debe calcular el valor de la respuesta cuando se reemplazan en el modelo ajustado los valores de las variables predictoras. Por esto, primero se debe tener presente el modelo ajustado, el cual, de acuerdo a la impresión del `summary`, es:
+
+\begin{equation*}
+\log{\left(\dfrac{\pi}{1-\pi}\right)} = `r round(m$coef[1],3)` + `r round(m$coef[2],3)`x^{(B)}_1 + `r round(m$coef[3],3)`x^{(C)}_1 + `r round(m$coef[4],3)`x^{(medio)}_2 + `r round(m$coef[5],3)`x^{(alto)}_2  `r round(m$coef[6],3)`x_3
+\end{equation*}
+
+
+Por ejemplo, el **logit** predicho de abandonar el CBP si es de la región A, se tienen dos hijos y es de estrato bajo es:
+
+```{r, echo = F}
+# Solicitando una sola prediccion:
+nd <- data.frame(x1 = "A", x2 = "bajo", x3 = 2)
+pred1.logit <- predict(m, newdata = nd, type = "link")      # por defecto
+pred1.p     <- predict(m, newdata = nd, type = "response")
+```
+
+
+\begin{eqnarray*}
+\log{\left(\dfrac{\pi}{1-\pi}\right)} & = & `r round(m$coef[1],3)` + `r round(m$coef[2],3)` \times 0 + `r round(m$coef[3],3)`\times 0 + `r round(m$coef[4],3)`\times 0 + `r round(m$coef[5],3)`\times 0  `r round(m$coef[6],3)`\times 2 \\
+ & = & `r round(pred1.logit, 3)`
+\end{eqnarray*}
+
+Observe que esta predicción se encuentra en escala **logit**. En escala de probabilidad, el resultado anterior queda como:
+
+\begin{equation*}
+\hat{\pi}  =  \dfrac{e^{`r round(pred1.logit, 3)`}}{1 + e^{`r round(pred1.logit, 3)`}} = \dfrac{1}{1 + e^{-(`r round(pred1.logit, 3)`)}} = `r round(pred1.p, 3)`
+\end{equation*}
+
+Es decir, de acuerdo al modelo ajustado, si se es de estrato bajo en la región A y se tienen dos hijos, la probabilidad de abandonar el CBP es de `r round(pred1.p, 3)` o de un `r round(pred1.p, 3)*100`%. Note que esta es una predicción. Si queremos comprar esta predicción con lo que realmente se observó, podemos filtrar la tabla de datos por aquel grupo (fila) de la tabla que tenga justo la combinación deseada de valores de las predictoras y calcular la proporción de abanando del CBP en dicha fila. A continuación hacemos esto:
+
+```{r}
+datg %>%
+  filter(x1 == "A" & x2 == "bajo" & x3 == 2) %>%
+  mutate(p.obs     = ne/n, 
+         odds.obs  = p.obs / (1 - p.obs), 
+         logit.obs = log(odds.obs))
+```
+
+Así, mientras que la proporción observada es de 0.25 (1 de 4), la proporción predicha es de `r round(pred1.p, 3)`, es decir, hay una diferencia aparentemente grande entre lo observado y lo predicho para esta combinación particular de predictoras.
+
+En **R**, el comando `predict` entrega predicciones desde un objeto `glm`. Para solicitar la predicción en escala **logit**, el código es el siguiente:
+
+```{r, echo = T}
+# Solicitando una sola prediccion en escala logit:
+nd <- data.frame(x1 = "A", x2 = "bajo", x3 = 2)
+pred1.logit <- predict(m, newdata = nd, type = "link")      # por defecto type = "link"
+pred1.logit
+```
+
+Para solicitar la predicción en escala de **probabilidad**, el código es:
+
+```{r, echo = T}
+# Solicitando una sola prediccion en escala de probabilidad:
+pred1.p     <- predict(m, newdata = nd, type = "response")
+pred1.p
+```
+
+<br>
+
+**Más de una predicción**
+
+Suponga que queremos generar no una, si no varias predicciones para explorar de manera más amplia los patrones de la respuesta que propone el modelo. Por ejemplo, considere las siguientes 3 x 3 x 3 = 27 combinaciones de valores en las predictoras:
+
+```{r}
+nd <- expand_grid(
+  x1 = c("A", "B", "C"),
+  x2 = c("bajo", "medio", "alto"),
+  x3 = c(0, 1, 2)
+)
+nd
+```
+
+
+El comando `predict` recibe el data.frame `nd` y genera predicciones para cada fila de `nd`. Sin embargo, el comando `modelr::add_predictions` hace lo mismo pero entrega una salida más conveniente:
+
+
+```{r}
+library(modelr)
+# Se calculan predicciones en escala de probabilidad para 
+# 27 combinaciones de valores de las predictoras:
+pred <- add_predictions(data = nd, model = m, type = "response")
+pred
+```
+
+Desde el data.frame `pred` podemos realizar un gráfico:
+
+```{r, fig.width=6, fig.height=2.8}
+ggplot(pred, aes(x = x3, y = pred, group = x2, color = x2)) + 
+  geom_point() + geom_line() +
+  scale_x_continuous(breaks = c(0,1,2), labels = c(0,1,2)) +
+  scale_color_discrete(breaks = c("bajo", "medio", "alto")) +
+  facet_grid(~ x1) +
+  labs(x = "Número de hijos", y = "Prob(Abandonar CBP)",
+       color = "Estrato") + ylim(0,1)
+```
+
+
+De acuerdo al modelo ajustado, en la región B y C, se estima una mayor probabilidad de abandonar el CBP que en la región A. Los estratos medio y alto son más propensos a abandonar el CBP que el estrato bajo y entre más hijos se tenga, menos probable es el abandono del CBP.
+
+<br>
+
+**Predicciones para cada fila de la tabla**
+
+Si el argumento `newdata` no se usa en el comando `predict`, este comando entrega las predicciones para cada fila de la tabla de datos original con la cual se ajustó el modelo. A continuación se calculan y agregan las probabilidades observadas, las predichas y el error estándar de las predicciones:
+
+```{r datgpred}
+datg.pred <- mutate(
+  datg,
+  p.obs   = ne / n,                          # prob. observadas
+  p.pred  = predict(m, type = "response"),   # prob. predichas
+  se.pred = sqrt(p.pred*(1 - p.pred) / n)    # error estandar de predicciones (de acuerdo a Rosner)
+)
+datg.pred
+```
+
+<br>
+
+
+**Residuales para cada fila de la tabla**
+
+El comando `residuals` cálcula los residuales tipo **Deviance** (`residuals(m, type = "deviance")`) y los residuales tipo **Pearson** (`residuals(m, type = "pearson")`). El comando `rstandard` produce los mismos dos tipos de residuales pero estandarizados. La estandarización incluye un ajuste del error estándar (ver fórmula y explicación en Bilder & Loughin). 
+
+```{r}
+datg.pred <- mutate(
+  datg.pred,
+  r.pearson   = (p.obs - p.pred) / se.pred,      # Residual tipo Pearson "crudo" (manual)
+  r0.pearson  = residuals(m, type = "pearson"),  # Residual tipo Pearson "crudo" (auto)
+  r1.pearson  = rstandard(m, type = "pearson"),  # Residual tipo Pearson "estandarizado" (auto)
+)
+datg.pred[, -(1:3)]
+```
+
+<br>
+
+**Normalidad sobre residuales**
+
+```{r}
+shapiro.test(datg.pred$r1.pearson)
+```
+
+<br>
+
+**Patrones en los residuales**
+
+```{r}
+summary(datg.pred$r1.pearson)
+```
+
+
+```{r, fig.width=10, fig.height=2.8}
+# Grafico base
+ggb <- ggplot(datg.pred, aes(y = r1.pearson)) + ylim(-3.5, 3.5) +
+  geom_hline(yintercept = c(-3,-2,0,2,3), linetype = 2, size = 0.4)
+
+# Predicciones vs. residuales
+gg1 <- ggb + geom_point(aes(x = p.pred)) +
+  geom_smooth(aes(x = p.pred), se = FALSE)
+
+# x1 vs. residuales
+gg2 <- ggb + geom_boxplot(aes(x = x1), alpha = 0.2)
+
+# x2 vs. residuales
+gg3 <- ggb + geom_boxplot(aes(x = x2), alpha = 0.2)
+
+# x3 vs. residuales
+gg4 <- ggb + geom_point(aes(x = x3)) +
+  geom_smooth(aes(x = x3), se = FALSE)
+
+library(cowplot)
+plot_grid(gg1, gg2, gg3, gg4, ncol = 4)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+<br>
+
+
+
+
+
+
+
