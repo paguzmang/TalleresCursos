@@ -2,7 +2,7 @@
 <br>
 <br>
 
-### Taller R (semestre 1 de 2022, [UCES](https://www.ces.edu.co/))
+### Taller R y Rmarkdown (desde semestre 1 de 2022, [UCES](https://www.ces.edu.co/))
 
 - **Sesión 1**. Introducción a Shiny
 
@@ -23,6 +23,8 @@
 - **Sesión 9**. [Gráficos 2D de funciones no lineales en varias variables](Taller_Funciones_No_Lineales/Graficos_2D_fun_nonLineal_ggplot2.html){target="Blank8"}
 
 - **Sesión 10**. [Introducción a Regresión no lineal con R](Taller_Funciones_No_Lineales/Taller_Regresion_NoLineal.html){target="Blank9"}
+
+**Semestre 2, 2023**
 
 - **Sesión 11**. [Tidyverse: parte 1 (manipulando tablas)](Taller_Tidyverse/Tidyverse_v1.html){target="Blank10"}
 
