@@ -168,6 +168,34 @@ datl  # LARGO
 
 <br>
 
+**Ejemplo 1: Ancho a largo**
+
+Considere la siguiente tabla y escribala (a mano) en su cuaderno en formato largo para las columnas `m` y `h`
+
+```{r, echo = F}
+tibble(
+  m = c(3, 3.5, 2),
+  h = c(10.5, 11, 12)
+) %>% kable() %>% kable_styling(full_width = F)
+```
+
+<br>
+
+**Ejemplo 2: largo a ancho**
+
+Considere la siguiente tabla. Escriba (a mano) en su cuaderno una nueva tabla donde separe los valores de `z` en varias columnas de acuerdo a la columna `x`:
+
+```{r, echo = F}
+tibble(
+  i = c(1,2,1,2),
+  x = c('a', 'a', 'b', 'b'),
+  z = c(3, 3.5, 2, 10)
+) %>% kable() %>% kable_styling(full_width = F)
+```
+
+
+<br>
+
 Son múltiples los escenarios en los cuales necesitamos pasar los datos desde una organización a otra y los comandos `pivot_wider` y `pivot_longer` (paquete **tidyr**) permiten cambiar esta organización desde uno a otro formato. A continuación mostramos el uso de cada comando. Para esto [descargue las tablas de ejemplo](datwl.RData) presentadas arriba y prepare su script de **R** como sigue:
 
 ```{r, eval = F}
@@ -386,6 +414,73 @@ Observe que el valor de los estadísticos se encuentra en una sóla columna lo q
 ```{r, echo = F}
 pivot_wider(gestStats, names_from = 'stat', values_from = 'stat_value')
 ```
+
+<br>
+
+## Para saber más
+
+### Largo a ancho con sólo dos columnas
+
+Considere las siguientes dos tablas:
+
+<div class="column-left">
+```{r}
+d1 <- tibble(
+  x = c('a', 'a', 'b', 'b'),
+  z = c(3, 3.5, 2, 10)
+)
+d1
+```
+</div>
+<div class="column-right">
+```{r}
+d2 <- tibble(
+  i = c(1,2,1,2),
+  x = c('a', 'a', 'b', 'b'),
+  z = c(3, 3.5, 2, 10)
+)
+d2
+```
+</div>
+
+Suponga que se quiere "pivotear" la columna `z` a nuevas columnas de acuerdo a los nombres de la columna `x`. El comando `pivot_wider` no funciona desde la tabla `d1` pero si desde la tabla `d2`, observe:
+
+```{r, warning=T, message=T}
+pivot_wider(d1, names_from = x, values_from = z)
+pivot_wider(d2, names_from = x, values_from = z)
+```
+
+<br>
+
+### NA's
+
+Cuando se va a pasar de formato largo a ancho, es importante considerar la columna que indica a los sujetos. Considere estos dos ejemplos similares, pero difieren en que en `d1` hay tres filas pero dos sujetos, mientras que en `d1` hay tres filas y tres sujetos. Observe que se agregan NA en los espacios perdidos:
+
+<div class="column-left">
+```{r}
+d1 <- tibble(
+  i = c(1,2,1),
+  x = c('a', 'a', 'b'),
+  z = c(3, 3.5, 2)
+)
+d1
+pivot_wider(d1, names_from = x, values_from = z)
+```
+</div>
+<div class="column-right">
+```{r}
+d2 <- tibble(
+  i = c(1,2,3),
+  x = c('a', 'a', 'b'),
+  z = c(3, 3.5, 2)
+)
+d2
+pivot_wider(d2, names_from = x, values_from = z)
+```
+</div>
+
+
+
 
 
 <br>
